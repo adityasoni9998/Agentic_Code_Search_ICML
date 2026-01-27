@@ -1,0 +1,21 @@
+\section{\texttt{CS-OSS} enables efficient code search (Analysis)}
+
+\subsection{Improve Swe-Bench scores}
+
+
+\begin{table*}[ht!]
+    \centering
+    \missingfigure[figwidth=12cm]{Main performance}
+    \caption{CS-OSS outperforms Loc-Agent }
+    \label{tab:performance}
+\end{table*}
+
+% Eval both the 14b and 4b.
+% Model: neulab/cso-q3-14b-32x4-swe_smith-multilevel_f1_minimum-custom_tool-300
+% Try 50steps, 250, the standard is 500 steps?
+% Local Model: 32B-Coder?
+% Seed-OSS 36B? Do a sample of 100 samples. 
+
+\subsection{Evolving Behaviours during the training}
+
+Steps, or tool use, how does this change through out the training run, or the inference behaviour, does it use more or less greps compared to other actions before it settles for a final answer.

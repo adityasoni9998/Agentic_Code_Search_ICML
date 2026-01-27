@@ -1,0 +1,13 @@
+\section{Experimental Setup}
+
+In this section, we describe how we conducted our experiments.
+
+\subsection{Training Setup}
+
+% https://huggingface.co/OpenPipe/Qwen3-14B-Instruct
+We use SWE-Smith~\cite{yang2025swesmithscalingdatasoftware} as basis to generate the training data using the method described in \autoref{sec:data_creation} and use a Qwen3-14B~\footnote{https://huggingface.co/OpenPipe/Qwen3-14B-Instruct} model with a modified chat template that does not remove the \texttt{<think><\textbackslash think>} during tokenization. This is important to enable training on the whole trajectory by concatenating each turn and maintain as close to the policy as possible.
+Our training uses a batch size of 32 with rollouts of 4. For each rollout, we source the prompt and response tokens directly from VLLM~\cite{kwon2023efficient} to avoid retokenization drift~\footnote{https://blog.vllm.ai/2025/10/22/agent-lightning.html}. Finally, the tool responses are masked. Trainings were conducted on single nodes of 8x H100 GPUs for 400 steps. 
+
+\subsection{Evaluation Task}
+
+We evaluate \texttt{CS-OSS} on Software Engineering tasks: SWE-Bench Lite~\citep{jimenez2024swebenchlanguagemodelsresolve}, Verified~\footnote{https://openai.com/index/introducing-swe-bench-verified/}, and Pro~\citep{deng2025swebenchproaiagents} by calculating the F1 score. We generate the ground truth the same way we generated the training data.
