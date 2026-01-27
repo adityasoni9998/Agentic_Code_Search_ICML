@@ -1,17 +1,8 @@
 \section{Background/Task Definition}
 
-Software Engineering Tasks often start with issues pertaining to a code repository. These issues describe the problem and may include snippets of error logs indicative of the problem. To solve this, an agent must fist identify which part of the repository is causing the issue and then produce the necessary fixes. Finding the right code (code localization) is as much of the challenge as is actually writing the patch. In fact, tasks such as SWE-Bench~\cite{jimenez2024swebenchlanguagemodelsresolve} have early variants where the code-localization part has already been "solved" by including the relevant files in the prompt.
+Software engineering tasks often involve solving GitHub issues in a code repository. These issues describe the underlying problem in natural language and may also include code snippets to reproduce the bug and related error logs. Agents for automated issue resolution need to identify relevant locations from the code repository before editing the codebase to fix the issue. Therefore, code localization is an essential pre-requisite step for the issue resolution task. 
 
+% In fact, tasks such as SWE-Bench~\cite{jimenez2024swebenchlanguagemodelsresolve} have early variants where the code-localization part has already been "solved" by including the relevant files in the prompt.
+While various 
 While traditional information retrieval exists, they often rely on heuristics such as semantic similarity between keywords and context. Agentic code-search, on the other hand, quickly rely
 % This does not necessarily work well in domains such as programming where similarly semantic expressions can be written in different ways. 
-
-\lscomment{Explain the code search task, what are the evaluation metrics. Aditya: why was this section repeated twice? Commented the copy in .tex below}
-
-% \section{Background/Task Definition}
-
-% Software Engineering Tasks often start with issues pertaining to a code repository. These issues describe the problem and may include snippets of error logs indicative of the problem. To solve this, an agent must fist identify which part of the repository is causing the issue and then produce the necessary fixes. Finding the right code (code localization) is as much of the challenge as is actually writing the patch. In fact, tasks such as SWE-Bench~\cite{jimenez2024swebenchlanguagemodelsresolve} have early variants where the code-localization part has already been "solved" by including the relevant files in the prompt.
-
-% While traditional information retrieval exists, they often rely on heuristics such as semantic similarity between keywords and context. Agentic code-search, on the other hand, quickly rely
-% % This does not necessarily work well in domains such as programming where similarly semantic expressions can be written in different ways. 
-
-% \lscomment{Explain the code search task, what are the evaluation metrics}

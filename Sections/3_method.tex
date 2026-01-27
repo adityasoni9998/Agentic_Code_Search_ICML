@@ -1,19 +1,21 @@
-\section{Code Search OSS}
+\section{Method}
 
-We describe the pipeline of training Code Search OSS starting with the specifics of generating the appropriate training data, our choice of agentic scaffolding, training reward, and the RL algorithm we use.
+In this section, we describe the method used for training \methodname - training data curation, design of our agent scaffold, reward function used during training, and the RL algorithm we use.
 
+% We demonstrate an accessible method to produce a competitive code-search agent using open-source artifacts. We train a 14b and a 4b model with this method.
 
-
-We demonstrate an accessible method to produce a competitive code-search agent using open-source artifacts. We train a 14b and a 4b model with this method.
-
-\subsection{Data Creation}
+\subsection{Data and Environment Curation}
 \label{sec:data_creation}
 
-We adapt SWE-smith~\citep{Yang2025} into a supervised dataset for code localization. For each instance, we convert the provided patch into ground-truth localization targets at three levels of granularity: edited files, edited modules (e.g., top-level classes), and edited entities (functions/methods). This conversion process builds on the preprocessing script from LocAgent~\citep{Chen2025}, which we adapt and extend to better suit our task setting.
+We now describe our methodology for curating our training data and developing the RL environment for our task. Given access to a GitHub issue $\mathcal{I}$ in the code repository $\mathcal{R}$, we process the ground-truth patch $\mathcal{P}$ that resolves this issue to extract ground-truth localization target $\mathcal{G}$ at three levels of granularity: edited files, edited modules, and edited functions. The task of the LLM agent is to locate $\mathcal{G}$, given the issue description $\mathcal{I}$ and the pre-PR code repository $\mathcal{R}$. We utilize the patch processing scripts from LocAgent~\citep{Chen2025}, which we adapt and extend to better suit our task setting as described below.
 
-To align SWE-smith with a Python-only localization task, we apply several filtering and normalization steps. We filter out pull requests that add or remove files, since added files cannot be predicted and deletions can produce ambiguous ground-truth labels. We also drop instances with empty issue descriptions. For targets, we restrict the ground-truth labels to \texttt{.py} files in order to be consistent with our task definition and improve the original edit detection rules to better handle some corner cases: class growth and class attribute edits contribute at the module/file level, docstring-only edits are ignored, and import/global-variable changes are treated as file-level edits only.
+First, we filter out all pull requests from our training data that add or remove files as files added by a PR cannot be predicted, and we cannot determine relevant ground-truth modules and entities for deleted files. Second, we exclude all non-Python files (e.g., README.md) modified by the PR from the ground truth, as we cannot extract function- or module-level information from such files. Third, we discard instances with empty issue descriptions. Finally, we extend the original processing logic of \citet{Chen2025} to correctly handle several important edit operations: detecting the addition of functions and class attributes at the module and file levels, capturing changes to imports and global variables at the file level, and ignoring edits to docstrings in functions and classes.
 
-After preprocessing, the resulting dataset consists of 39K instances drawn from 131 different repositories
+We prepare the environment for the agent by cloning the specific commit of the repository $\mathcal{R}$ in a specific location known to the agent. Since code localization does not require executing code from the repository, we skip the installation of the repository's dependencies. Unlike prior methods like LocAgent~\citep{Chen2025}, our deliberate choice a simple agent scaffold \emph{significantly} simplifies setting up the environment for the agent as it does not require access to a code graph, dependency parser, etc. \sonicomment{TODO: add concrete info here from baselines and explain why we have a simpler setup without graph/vector index, etc.}
+
+% After preprocessing, the resulting dataset consists of 39K instances drawn from 131 different repositories
+\sonicomment{I have shifted the SWE-Smith para to experimental setup}
+ % We utilize the SWE-smith~\citep{yang2025swesmithscalingdatasoftware} dataset during training which consists of a total of 39K instances from 131 repositories after preprocessing and filtering.
 
 \tycomment{Add a table with some statistics about the dataset?}
 
@@ -25,25 +27,38 @@ After preprocessing, the resulting dataset consists of 39K instances drawn from 
 % \end{table}
 
 
-\subsection{Scaffolding Choice}
+\subsection{Agent Scaffold}
 
-We use Software-Agent-SDK~\footnote{https://github.com/OpenHands/software-agent-sdk} as a scafolding to aid in both training and evaluation. Software-Agent-SDK handles the processes such as constructing the complete system message that includes the tool description, multi-turn process along with stop-condition. 
+We use the OpenHands Software Agent SDK~\cite{wang2025openhandssoftwareagentsdk} as the agent scaffold for \methodname, given its strong performance on numerous software engineering benchmarks as a result of its modular design, robust implementation of various crucial tools (for e.g. terminal, file editor, etc.), and the ability to augment the scaffold with additional tools, and integrate the agent scaffold with our training backend.
 
-CS-OSS is equiped with 2 tools, the \texttt{Terminal} tool that allows the agent to use bash commands such as \texttt{rg} or \texttt{grep}, and \texttt{LocalizationFinish} which is a tool to submit the predicted files, modules, and function which then ends the search process. To support faster searches we complement the \texttt{Termianl} tool by ensuring ripgrep~\footnote{https://github.com/BurntSushi/ripgrep} is installed.
-
-
+% , given its well-designed  OpenHands  Software-Agent-SDK handles the processes such as constructing the complete system message that includes the tool description, multi-turn process along with stop-condition. 
+In particular, the agent is equipped with 2 tools: the \texttt{Terminal} tool that allows execution of bash commands like \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, and the \texttt{LocalizationFinish} tool to submit the predicted files, modules, and functions after completing the localization. To support faster execution of grep-styled commands, we additionally ensure that ripgrep~\footnote{https://github.com/BurntSushi/ripgrep} is installed in the agent's environment.
 % Vector Search tool, we'll add here
 
 \subsection{Reward Design}
 
-Our core rewards comprise of F1 scores for each predicted level of File, Class/Module, and Function/Method. We observe that without explicitly controlling the maximum number of turns, model training can crash due to constantly reaching maximum number of turns where trajectories will always fail due to the trajectory being incomplete. To alleviate this, we explicitly reward the model if an only if the whole trajectory was completed in 4 turns. We find that \texttt{CS-OSS} was able to learn to consistently use 4 turns.
+We use $x \in \mathcal{X}$ as prompts that contain the issue description, tool description. $\tau$ denotes multiturn trajectories that an agent produces while interacting with the environment. Finally an agent produces a list of $y \in \mathcal{Y}$ that contains a list relevant files, modules, and functions.
+
+Our core rewards comprise of F1 scores for each predicted level of File, Class/Module, and Function/Method. We observe that without explicitly controlling the maximum number of turns, model training can crash due to constantly reaching maximum number of turns where trajectories will always fail due to the trajectory being incomplete. To alleviate this, we explicitly reward the model if an only if the whole trajectory was completed in 4 turns. We find that \methodname was able to learn to consistently use 4 turns.
+
+\begin{align}
+    r(\tau_i, y_i, y^{\star}) &= r^{\mathsf{f1-file}}(y_i, y^{\star}) + r^{\mathsf{f1-module}}(y_i, y^{\star}) \nonumber \\ &+ r^{\mathsf{f1-func}}
+    (y_i, y^{\star})
+    \nonumber \\ &+ r^{\mathsf{turn}}(\tau_i, t).
+\end{align}
+
+We also experimented with auxiliary rewards to enhance \methodname such as explicitly rewarding parallel tool-calling and found this to be harmful for model performance.
 
 \subsection{Learning Algorithm}
 
-To train our agent, we use asynchronous RL training where both weight optimization and rollout generation to occur in tandem. This allows for better GPU utilization. In doing this, optimization occurs when there are sufficiently enough training samples which can include generated rollouts from a few steps back (i.e training a model during its $n$-th step may include trajectories that were generated by the $n-k$-th version. Here, $k$ is called the staleness and we allow for $k$=4. After an optimization is completed, the weights used for rollouts are replaced (any ongoing rollout samplings are canceled). 
+To implement our training backend, we leverage SkyRL~\cite{griggs2025skrylv01} - a modular framework for training language models with RL which supports crucial features like asynchronous RL training where both weight optimization and rollout generation can occur in parallel, allowing for better GPU utilization. In doing this, optimization occurs when there are sufficiently enough training samples which can include generated rollouts from a few steps back (i.e training a model during its $n$-th step may include trajectories that were generated by the $n-k$-th version. Here, $k$ is called the staleness and we allow for $k$=4. After an optimization is completed, the weights used for rollouts are replaced (any ongoing inferences are canceled). 
 
 GSPO~\citep{zheng2025groupsequencepolicyoptimization}
 Briefly talk about GRPO\citep{shao2024deepseekmath}, but explain how we use GSPO instead. In preliminary runs, we found GSPO works while GRPO is prone to failure later in training. We experience hardware issues (appendix)
+
+% \subsection{Implementation}
+
+
 
 % All submissions must follow the specified format.
 
