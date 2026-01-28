@@ -1,0 +1,36 @@
+
+\begin{table*}[t]
+\caption{\methodname outperforms competitive baselines on SWE-Bench Pro for file, module, and function-level retrieval, with significantly higher F1 scores. We see particularly large gains in function-level localization highlighting the effectiveness of \methodname in locating relevant code snippets within files. All models from the Qwen2.5 family are instruct variants, and all the recall, precision, and F1 scores are in \%}
+\centering
+\renewcommand{\arraystretch}{1.6}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{c|c|c*{9}{|c}}
+\toprule
+\toprule
+\multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multirow{2}{*}{\textbf{Training Algo.}} & \multicolumn{3}{|c}{\textbf{File-level}} & \multicolumn{3}{|c}{\textbf{Module-level}} & \multicolumn{3}{|c}{\textbf{Function-level}} \\
+\cline{4-12}
+& & & Rec. & Prec. & \textbf{F1} & Rec. & Prec. & \textbf{F1} & Rec. & Prec. & \textbf{F1} \\
+\midrule
+Agentless & \multirow{4}{*}{Qwen2.5-32B} & - & 43.07 & 13.89 & 20.07 & - & - & - & 11.08 & 7.31 & 7.98 \\
+\cmidrule{1-1}\cmidrule{3-12}
+CoSIL & & - & 48.87 & 14.03 & 20.95 & - & - & - & 14.03 & 6 & 7.67 \\
+\cmidrule{1-1}\cmidrule{3-12}
+LocAgent & & - & 25.73 & 0.38 & 19.77 & - & - & - & 8.72 & 0.17 & 4.3 \\
+\cmidrule{1-1}\cmidrule{3-12}
+RepoSearcher & & - & 9 & 2.52 & 3.81 & & & & 2.52 & 2.46 & 2.31 \\
+\midrule
+\multirow{3}{*}{RepoNavigator} & Qwen2.5-7B & \multirow{3}{*}{GRPO} & 36.36 & 48.13 & 39.74 & - & - & - & 12.33 & 21.26 & 14.29 \\
+& Qwen2.5-14B & & 46.85 & 58.64 & 49.72 & - & - & - & 16.05 & 25.25 & 18.06 \\
+& Qwen2.5-32B & & 53.49 & 68.69 & 57.57 & - & - & - & 18.13 & 29.44 & 20.72 \\
+\midrule
+\multirow{5}{*}{OpenHands} & Qwen3-4B-Instr. & - & 35.59 & 44.42 & 36.96 & 10.19 & 17.46 & 11.78 & 7.01 & 12.16 & 8.12 \\
+& Qwen3-14B & - & 48.22 & 28.48 & 30.08 & 14.21 & 13.82 & 11.87 & 9.92 & 9.97 & 8.2 \\
+& Qwen3-32B-think & - & 54.55 & 49.65 & 46.85 & 22.62 & 27.18 & 21.94 & 11.93 & 17.82 & 12.31 \\
+\cmidrule{2-12}
+& \methodname-4B & \multirow{2}{*}{GSPO} & 46.16 & 68.98 & 51.77 & 31.13 & 56.05 & 36.97 & 23.73 & 48.65 & 29.03 \\
+& \methodname-14B & & 48.81 & 68.81 & 53.63 & 32.02 & 53.8 & 37.13 & 23.76 & 46.09 & 28.74 \\
+\bottomrule
+\end{tabular}%
+}
+\label{tab:swe_bench_pro_results}
+\end{table*}

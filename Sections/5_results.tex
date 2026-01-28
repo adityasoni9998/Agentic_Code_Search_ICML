@@ -1,0 +1,32 @@
+\section{Results}\label{sec:results}
+
+In this section, we discuss the experimental results of \methodname. We begin by discussing overall performance on 3 benchmarks. Then, we discuss comparisons with existing approaches. 
+
+\sonicomment{Shift to analysis}
+Finally, we observe how \methodname affects downstream performance by aiding other agents as a subagent in solving SWE tasks.
+
+\subsection{\methodname as a highly competitive code-localization agent}
+
+\methodname for both 4B and 14B sizes perform at a much higher F1 level on all three SWE-tasks. Notably, while lagging behind RepoNavigator-32B on file-level F1, \methodname achieves higher function-level F1
+
+\sonicomment{We only lag for pro, not for verified and lite}
+
+\subsection{}
+
+\input{Tables/results_pro}
+
+\autoref{tab:swe_bench_pro_results} presents the performance of various scaffolds and language models on the code localization task across three granularity levels. The baseline approaches; Agentless, CoSIL~\cite{}, LocAgent~\cite{}, and RepoSearcher~\cite{} using Qwen2.5-32B exhibit a pattern of high recall and poor precision at the file and function level. This suggests systematic over-retrieval, where models identify many candidate files but lack the discriminative capability to filter irrelevant results. 
+
+% In contrast, 
+
+The introduction of reinforcement learning-based training yields substantial improvements with approaches such as RepoNavigator~\cite{} with GRPO result in both higher precision and recall.
+
+% \methodname models within the OpenHands framework, which achieve competitive results with significantly fewer parameters. CS-OSS-4B reaches 51.77 F1 at the file level and 29.03 F1 at the function level—the latter representing a 136% improvement over the untrained Qwen3-32B-think model (12.31 F1) despite being 8× smaller.
+% The performance gap between trained and untrained models widens progressively at finer granularities. At the function level, where precise localization is most challenging, GSPO-trained models achieve F1 scores of 28.74–29.03 compared to 7.67–12.31 for untrained approaches. This disparity suggests that specialized training is essential for capturing fine-grained code structure and semantic relationships. Furthermore, the diminishing returns observed between CS-OSS-4B and CS-OSS-14B (29.03 vs. 28.74 function-level F1) indicate that GSPO training enables efficient utilization of model capacity, achieving near-optimal performance at smaller scales. 
+
+
+\subsection{\methodname Improves Downstream Performance on SWE-tasks}
+
+We further investigate how well \methodname aids in actual SWE tasks. To do this, we append CS-OSS prediction to the user message for another agent. We evaluate Qwen3-8B with on 100 samples of SWE-Bench Verified. Initially, Qwen3-8B has poor performance with only X\% resolve rate. However, when using \methodname, we observe a performance increase of X\%. 
+
+
