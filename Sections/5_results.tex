@@ -1,37 +1,82 @@
-\section{Results}\label{sec:results}
+\input{Tables/results_verified}
 
-\sonicomment{For personal reference, the three key takeaways from the results tables:
+\section{\methodname Unlocks Effective Code Localization}
+\label{sec:results}
 
-1. 
 
-}
-In this section, we discuss the experimental results of \methodname. We begin by discussing overall performance on 3 benchmarks. Then, we discuss comparisons with existing approaches. 
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{Figures/comparison_chart.pdf}
+    \caption{Performance gain averaged over 3 benchmarks; SWEBench-Lite, Verified, and Pro. \methodname effectively works for both 4B and 14B parameter models.}
+    \label{fig:performance_gain}
+\end{figure}
+% \sonicomment{For personal reference, the three key takeaways from the results tables:
 
-\sonicomment{Shift to analysis section -- we don't know if this works yet}
-Finally, we observe how \methodname affects downstream performance by aiding other agents as a subagent in solving SWE tasks.
-\input{Tables/results_summary}
-\subsection{\methodname as a highly competitive code-localization agent}
+% 1. 
 
-\methodname for both 4B and 14B sizes perform at a much higher F1 level on all three SWE-tasks. Notably, while lagging behind RepoNavigator-32B on file-level F1, \methodname achieves higher function-level F1
+% }
+In this section, we discuss the experimental results of \methodname. Table \ref{tab:swe_bench_summary} summarizes the results for the three evaluation benchmarks and compares \methodname against the most competitive open-source and closed-source baselines. In addition, we include detailed experimental results for SWE-Bench Verified in Table \ref{tab:swe_bench_results}, SWE-Bench Pro in Table \ref{tab:swe_bench_pro_results}, and SWE-Bench Lite in Table \ref{tab:swe_bench_lite_results}. Note that while we report F1, precision, and recall for all our experiments, we primarily focus our analysis on F1 score, as it jointly captures precision and recall, and is also the primary evaluation metric used by RepoNavigator~\citep{zhang2026toolenoughreinforcementlearning} which is closest to our work and is the strongest open-source baseline. 
 
-\sonicomment{We only lag for pro, not for verified and lite}
+Across all three evaluation benchmarks, \methodname-4B and \methodname-14B achieve superior or competitive file- and function-level localization performance compared to substantially larger 32B base and trained models across different scaffolding choices, often narrowing the gap with closed-source models across all three benchmarks (Table~\ref{tab:swe_bench_summary}) 
+\subsection{\methodname outperforms larger base and post-trained LLMs from complex scaffolds} 
 
-\subsection{}
-
+Firstly, \methodname-4B and \methodname-14B achieve significant performance gains over corresponding 4B and 14B pre-trained models (Figure \ref{fig:performance_gain}) and also outperform significantly larger 32B reasoning model with an identical agent scaffold (OpenHands) for all three localization granularities and all evaluation benchmarks. In addition, \methodname-4B and \methodname-14B consistently outperforms Qwen2.5-32B Instruct model across numerous specialized scaffolds like RepoSearcher, Agentless, CoSIL, OrcaLoca, etc. for both file and function-level localization.
 \input{Tables/results_pro}
+Despite using an extremely simple agent scaffold with simply a terminal tool, \methodname achieves significantly stronger localization performance than larger models from RepoSearcher and RepoNavigator, that leverage complex, specialized tools with programming language-specific implementation. We primarily compare with RepoNavigator as it has stronger performance over RepoSearcher, and is closer to our work in terms of dynamically predicting a flexible number of locations (as opposed the fixed top-K retrieval approach from RepoSearcher). 
 
-\autoref{tab:swe_bench_pro_results} presents the performance of various scaffolds and language models on the code localization task across three granularity levels. The baseline approaches; Agentless, CoSIL~\cite{}, LocAgent~\cite{}, and RepoSearcher~\cite{} using Qwen2.5-32B exhibit a pattern of high recall and poor precision at the file and function level. This suggests systematic over-retrieval, where models identify many candidate files but lack the discriminative capability to filter irrelevant results. 
+Compared to the trained 7B, 14B and 32B models from RepoNavigator, \methodname-4B, despite its smaller size, achieves absolute gains of upto \textbf{16.94\%} in the file-level F1 score and \textbf{9.29\%} in the function-level F1 score on SWE-Bench Verified. On SWE-Bench Pro, \methodname-4B achieves absolute improvements of upto \textbf{12.03\%} in file-level F1 score over the RepoNavigator 7B and 14B models, and of upto \textbf{14.74\%} in function-level F1-scores over RepoNavigator's 7B, 14B and 32B models. In addition, \methodname-14B achieves superior function-level localization performance over the RepoNavigator 32B model, with an absolute improvement of \textbf{6.23\%} on SWE-Bench Verified \textbf{8.02\%} on SWE-Bench Pro. \methodname-14B achieves competitive file-localization performance on SWE-Bench Verified, with a small absolute gain of 0.82\%, whereas it underperforms RepoNavigator-32B by 3.94\% on SWE-Bench Pro.
 
-% In contrast, 
+\subsection{\methodname closes the performance gap with closed-source LLMs}Surprisingly, using a fully open-source pipeline, \methodname competes strongly against proprietary models. On SWE-Bench Verified (Table \ref{tab:swe_bench_results}), our models achieve substantial absolute gains in function-level localization. \methodname-14B exceeds the RepoNavigator scaffold powered by Claude-3.7-Sonnet and GPT-5-Chat by \textbf{8.6\%} and \textbf{9.15\%} in F1 scores respectively. Even \methodname-4B surpasses Claude-3.7-Sonnet by \textbf{5.1\%} and GPT-5 by \textbf{5.06\%} in function-level F1 scores. While the closed-source LLMs from the Claude family still outperform \methodname in terms of file-level localization, GPT-5-Chat significantly under-performs our models by \textbf{9.69\%} highlighting the competitiveness of our approach.
 
-The introduction of reinforcement learning-based training yields substantial improvements with approaches such as RepoNavigator~\cite{zhang2026toolenoughreinforcementlearning} with GRPO result in both higher precision and recall.
+
+% \textbf{Function}
+\methodname for both 4B and 14B sizes perform at a much higher F1 level on all three SWE-tasks. Notably, while lagging behind RepoNavigator-32B on file-level F1, \methodname achieves higher function-level F1
+\input{Tables/results_lite}
+
+% \subsection{}
+
+
+% \autoref{tab:swe_bench_pro_results} presents the performance of various scaffolds and language models on the code localization task across three granularity levels. The baseline approaches; Agentless, CoSIL~\cite{}, LocAgent~\cite{}, and RepoSearcher~\cite{} using Qwen2.5-32B exhibit a pattern of high recall and poor precision at the file and function level. This suggests systematic over-retrieval, where models identify many candidate files but lack the discriminative capability to filter irrelevant results. 
+
+% % In contrast, 
+
+% The introduction of reinforcement learning-based training yields substantial improvements with approaches such as RepoNavigator~\cite{zhang2026toolenoughreinforcementlearning} with GRPO result in both higher precision and recall.
 
 % \methodname models within the OpenHands framework, which achieve competitive results with significantly fewer parameters. CS-OSS-4B reaches 51.77 F1 at the file level and 29.03 F1 at the function level—the latter representing a 136% improvement over the untrained Qwen3-32B-think model (12.31 F1) despite being 8× smaller.
 % The performance gap between trained and untrained models widens progressively at finer granularities. At the function level, where precise localization is most challenging, GSPO-trained models achieve F1 scores of 28.74–29.03 compared to 7.67–12.31 for untrained approaches. This disparity suggests that specialized training is essential for capturing fine-grained code structure and semantic relationships. Furthermore, the diminishing returns observed between CS-OSS-4B and CS-OSS-14B (29.03 vs. 28.74 function-level F1) indicate that GSPO training enables efficient utilization of model capacity, achieving near-optimal performance at smaller scales. 
 
+\subsection{\methodname as a Well-Rounded Code-Searcher}
 
-\subsection{\methodname Improves Downstream Performance on SWE-tasks}
+We find that \methodname is flexible in that it is not constrained by any specific tool nor is by maximum number of items it must return. While RepoNavigator was trained to utilize the flow of code execution, it achieves higher File-level F1 on SWE-Bench Pro, but lags in the Function-level F1 compared to \methodname. We see this a potential issue, we argue that the true interest of a SWE Agent is the parts of the code that are relevant to the issue and not generally the whole file where the issue might come from. Allowing and sub-agent such as \methodname to explore unconstrained by a particular method proves beneficial in this scenario. Additionally, our method also implies data creation that is much simpler and thus easier to scale as necessary. 
 
-We further investigate how well \methodname aids in actual SWE tasks. To do this, we append CS-OSS prediction to the user message for another agent. We evaluate Qwen3-8B with on 100 samples of SWE-Bench Verified. Initially, Qwen3-8B has poor performance with only X\% resolve rate. However, when using \methodname, we observe a performance increase of X\%. 
+Another popular approach to code localization configures the sub-agent to return $k$ number of candidate answers. A higher $k$ value has a higher recall or higher chance of returning highest number of relevant items but at the risk of also returning non-relevant ones. This poses a potential issue of distracting a SWE agent. On the other hand, reducing $k$ will alleviate this issue but at the cost of leaving out actually relevant items. In contrast, we do not configure \methodname with any $k$ and instead train it to with various cases where the correct set of items can be singular or multiple. This effectively strikes a balance between having to decide what $k$ value is appropriate.
 
 
+
+% \subsection{\methodname Improves Downstream Performance on SWE-tasks}
+
+% We further investigate how well \methodname aids in actual SWE tasks. To do this, we append CS-OSS prediction to the user message for another agent. We evaluate Qwen3-8B with on 100 samples of SWE-Bench Verified. Initially, Qwen3-8B has poor performance with only X\% resolve rate. However, when using \methodname, we observe a performance increase of X\%. 
+
+% \section{Analysis}
+% \subsection{Improve Swe-Bench scores}
+
+% \sonicomment{Sanidhya hasn't been able to run this for us - I can try doing this but prioritizing other stuff first}
+% Eval both the 14b and 4b.
+% Model: neulab/cso-q3-14b-32x4-swe_smith-multilevel_f1_minimum-custom_tool-300
+% Try 50steps, 250, the standard is 500 steps?
+% Local Model: 32B-Coder?
+% Seed-OSS 36B? Do a sample of 100 samples. 
+
+\subsection{Evolving Behaviors during the training}
+
+% \lscomment{Steps, or tool use, how does this change through out the training run, or the inference behaviour, does it use more or less greps compared to other actions before it settles for a final answer.}
+
+In \autoref{fig:tool_use}, we observe that at the start of training, \methodname tries out multiple different bash commands such as \texttt{cat}, \texttt{grep}, etc. However, as training progresses, the agent quickly converges to using less command variations and after 250 steps only uses \texttt{rg} and \texttt{sed}. This is most likely due to the \texttt{rg} command being comprehensive enough as functionalities from \texttt{cat}, \texttt{find}, and \texttt{grep} can be done with \texttt{rg}. \texttt{cd} aslo sees dimishing use likely due to the the more effective use of \texttt{rg} that makes changing directory unnecessary.
+
+\begin{figure*}[h]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Figures/change.png}
+    \caption{Although it starts with using various commands, as training progresses, \methodname quickly learns to only utilize two particular bash commands; \texttt{rg} and \texttt{sed}. This may due to \texttt{rg} capable enough to functionally replace other commands.}
+    \label{fig:tool_use}
+\end{figure*}
+% \sonicomment{I don't think Sriraam is available to write this for us, we need to do this as well!}

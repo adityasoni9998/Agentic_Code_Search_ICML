@@ -1,30 +1,27 @@
 \section{Related Work}
 
-\lscomment{Subagents, Multiagents, Recursive Agents}
+% \lscomment{Subagents, Multiagents, Recursive Agents}
 
-\lscomment{Approaches to Solving SWE Tasks}
+% \lscomment{Approaches to Solving SWE Tasks}
 
-\yccomment{Would you mind adding a few references here?
-I wasn’t entirely sure what specific lines of work you had in mind for these two topics.}
+% \yccomment{Would you mind adding a few references here?
+% I wasn’t entirely sure what specific lines of work you had in mind for these two topics.}
 
 
-\lscomment{Code Localization, discuss few of them as contemporary works if needed but fine eitherway}
+% \lscomment{Code Localization, discuss few of them as contemporary works if needed but fine eitherway}
 
-\yccomment{a draft:}
+% \yccomment{a draft:}
 
 \subsection{Code localization for software engineering}
-Code localization---identifying files and finer-grained code entities requiring modification---is fundamental to automated software engineering. In SWE-bench, baseline localization methods rely on information retrieval and ranking methods such as BM25-based retrieval and semantic similarity~\citep{jimenez2024swebenchlanguagemodelsresolve}, but often struggle to capture structural dependencies in large repositories.
+% Code localization---identifying files and finer-grained code entities requiring modification---is fundamental to automated software engineering. In SWE-bench, baseline localization methods rely on information retrieval and ranking methods such as BM25-based retrieval and semantic similarity~\citep{jimenez2024swebenchlanguagemodelsresolve}, but often struggle to capture structural dependencies in large repositories.
 
-Recent LLM-based systems increasingly treat localization as an agentic process. Fixed-pipeline systems such as Agentless~\citep{xia2024agentlessdemystifyingllmbasedsoftware} separate localization from editing.
-
-Graph- and structure-aware methods, including LocAgent~\citep{chen-etal-2025-locagent}, CoSIL~\citep{liu2025cosil}, and RepoGraph~\citep{ouyang2025repographenhancingaisoftware}, introduce explicit repository structure to guide search. Other work explores tool-augmented or agent-based localization strategies, including priority scheduling and context pruning (e.g., OrcaLoca~\citep{yu2025orcalocallmagentframework}), as well as end-to-end RL training for repository-level agents such as RepoNavigator~\citep{zhang2026toolenoughreinforcementlearning}.
+Recent LLM-based systems increasingly treat localization as an agentic process. Fixed-pipeline systems such as Agentless~\citep{xia2024agentlessdemystifyingllmbasedsoftware} separate localization from editing. Graph- and structure-aware methods, including LocAgent~\citep{chen-etal-2025-locagent}, CoSIL~\citep{liu2025cosil}, and RepoGraph~\citep{ouyang2025repographenhancingaisoftware}, introduce explicit repository structure to guide search. Other work explores tool-augmented or agent-based localization strategies, including priority scheduling and context pruning (e.g., OrcaLoca~\citep{yu2025orcalocallmagentframework}), as well as end-to-end RL training for repository-level agents such as RepoNavigator~\citep{zhang2026toolenoughreinforcementlearning}.
 
 \subsection{Training methods for code agents}
 Training code agents raises challenges in data efficiency, stability, and generalization. Many systems rely on supervised fine-tuning and/or distillation from strong teachers (e.g., LocAgent~\citep{chen-etal-2025-locagent} and SWE-Fixer~\citep{xie2025swefixertrainingopensourcellms}), whereas reinforcement learning enables direct optimization from task rewards. Recent RL methods such as GRPO~\citep{shao2024deepseekmathpushinglimitsmathematical} and GSPO~\citep{zheng2025groupsequencepolicyoptimization} provide scalable policy optimization for language models. SWE-Gym~\citep{pan2025trainingsoftwareengineeringagents} and RepoNavigator~\citep{zhang2026toolenoughreinforcementlearning} further validate RL for software engineering agents, while RepoSearch-R1~\citep{li2025empoweringrepoqaagentbasedreinforcement} explores MCTS-driven self-training. Prior studies also highlight the importance of stabilizing training and controlling failure modes in group-based RL~\citep{sid2025preview}.
 
-
 \subsection{Multi-agent and modular systems}
-Modular architectures decompose complex software engineering tasks into specialized components. MASAI~\citep{arora2024masaimodulararchitecturesoftwareengineering} employs multiple subagents for issue reproduction, localization, fixing, and ranking. In industry practice, specialized subagents for retrieval and context gathering have also become common~\citep{cognition2025swegrep,morph2025warpgrep,cherny2025claudecode,cursor2025semsearch}. Such modularity motivates training dedicated localization components that can be integrated with downstream editing agents.
+Modular architectures decompose complex software engineering tasks into specialized components. MASAI~\citep{arora2024masaimodulararchitecturesoftwareengineering} employs multiple subagents for issue reproduction, localization, fixing, and ranking. In industry practice, specialized subagents for retrieval and context gathering have also become common~\citep{cognition2025swegrep,morph2025warpgrep,cherny2025claudecode,heule2025semsearch}. Such modularity motivates training dedicated localization components that can be integrated with downstream editing agents.
 
-\subsection{Positioning}
-Our work targets multi-level localization (file/class/function) with a lightweight tool scaffold and trains a dedicated localization subagent directly with RL. Compared to structure-heavy approaches (e.g., graph-guided localization) and general repository-level agents, we emphasize a simple, reproducible recipe with multi-level F1 rewards and stability techniques, and release the full training and evaluation pipeline.
+% \subsection{Positioning}
+% Our work targets multi-level localization (file/class/function) with a lightweight tool scaffold and trains a dedicated localization subagent directly with RL. Compared to structure-heavy approaches (e.g., graph-guided localization) and general repository-level agents, we emphasize a simple, reproducible recipe with multi-level F1 rewards and stability techniques, and release the full training and evaluation pipeline.

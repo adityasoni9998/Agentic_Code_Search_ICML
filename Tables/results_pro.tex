@@ -3,9 +3,9 @@
 
 % Define the custom Light Golden color
 \begin{table*}[t]
-\caption{\methodname{} outperforms competitive baselines on SWE-Bench Pro for file, module, and function-level retrieval, with significantly higher F1 scores. We see particularly large gains in function-level localization highlighting the effectiveness of \methodname{} in locating relevant code snippets within files. All models from the Qwen2.5 family are instruct variants, and all the recall, precision, and F1 scores are in \%.}
+\caption{\methodname outperforms competitive baselines on SWE-Bench Pro for file, module, and function-level retrieval, with significantly higher F1 scores. We see particularly large gains in function-level localization highlighting the effectiveness of \methodname{} in locating relevant code snippets within files. All models from the Qwen2.5 family are instruct variants, and all the recall, precision, and F1 scores are in \%.}
 \centering
-\renewcommand{\arraystretch}{1.25} 
+\renewcommand{\arraystretch}{1.1} 
 \setlength{\tabcolsep}{4.5pt} 
 \resizebox{\textwidth}{!}{%
 % Restored vertical bars (|) between the first three columns
@@ -54,7 +54,7 @@ RepoSearcher & & - &
 20.72 & 29.44 & 18.13 \\
 \midrule
 
-\multirow{5}{*}{OpenHands} & Qwen3-4B-Instr. & - & 
+\multirow{5}{*}{OpenHands} & Qwen3-4B-Instruct & - & 
 36.96 & 44.42 & 35.59 & 
 11.78 & 17.46 & 10.19 & 
 8.12 & 12.16 & 7.01 \\
@@ -64,19 +64,18 @@ RepoSearcher & & - &
 11.87 & 13.82 & 14.21 & 
 8.2 & 9.97 & 9.92 \\
 
-& Qwen3-32B-think & - & 
+& Qwen3-32B-Think & - & 
 46.85 & 49.65 & \textbf{54.55} & 
 21.94 & 27.18 & 22.62 & 
 12.31 & 17.82 & 11.93 \\
 
-\rowcolor{lightgolden}
- & 
+\rowcolor{lightgolden}\cellcolor{white} & 
 \textbf{\methodname-4B (\textit{Ours})} & & 
 51.77 & \textbf{68.98} & 46.16 & 
 \underline{36.97} & \textbf{56.05} & \underline{31.13} & 
 \textbf{29.03} & \textbf{48.65} & \underline{23.73} \\
 
-\rowcolor{lightgolden}
+\rowcolor{lightgolden}\cellcolor{white}
 & \textbf{\methodname-14B (\textit{Ours})} & \multirow{-2}{*}{GSPO} & 
 \underline{53.63} & \underline{68.81} & 48.81 & 
 \textbf{37.13} & \underline{53.8} & \textbf{32.02} & 

@@ -8,6 +8,8 @@
 \usepackage{subcaption}
 \usepackage{booktabs} % for professional tables
 \usepackage{xspace}
+\usepackage{float}
+\usepackage{tabularx}
 % hyperref makes hyperlinks in the resulting PDF.
 % If your build breaks (sometimes temporarily if a hyperlink spans a page)
 % please comment out the following usepackage line and replace
@@ -18,7 +20,7 @@
 \usepackage{graphicx}
 % Attempt to make hyperref and algorithmic work together better:
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
-\newcommand{\methodname}{\texttt{CS-OSS}\xspace}
+\newcommand{\methodname}{\textsc{CodeScout}\xspace}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{graphicx}
@@ -73,17 +75,23 @@
 \addauthor{soni}{orange}
 \addauthor{ty}{teal}
 \addauthor{yc}{cyan}
+\addauthor{gn}{magenta}
+
+\renewcommand{\sectionautorefname}{\S}
+\renewcommand{\subsectionautorefname}{\S}
+\renewcommand{\subsubsectionautorefname}{\S}
 
 % The \icmltitle you define below is probably too long as a header.
 % Therefore, a short form for the running title is supplied here:
-\icmltitlerunning{Code-Search OSS}
+\icmltitlerunning{\methodname: An Effective Recipe for Reinforcement Learning of Code Search Agents}
 
 \begin{document}
 
 \twocolumn[
-  \icmltitle{Code-Search OSS: \\
+  \icmltitle{\methodname: \\
   % Effective Reinforcement Learning Techniques for Agentic Code Search
-  Training Open-Source LLM Agents with Reinforcement Learning for Repository-Level Localization
+  % Training Open-Source LLM Agents with Reinforcement Learning for Repository-Level Localization
+  An Effective Recipe for Reinforcement Learning of Code Search Agents
   }
 
 
@@ -149,8 +157,9 @@
 \input{Sections/2_task_background}
 \input{Sections/3_method}
 \input{Sections/4_experimental_setup}
+% results and analysis merged.
 \input{Sections/5_results}
-\input{Sections/6_analysis}
+% \input{Sections/6_analysis}
 \input{Sections/7_related_work}
 \input{Sections/8_conclusion}
 \input{Sections/9_impact_statement}

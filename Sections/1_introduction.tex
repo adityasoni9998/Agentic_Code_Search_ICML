@@ -1,24 +1,39 @@
 \section{Introduction}
 
 
-Recent advances in large language models have enabled rapid progress on repository-level software engineering tasks, such as resolving real-world GitHub issues in large codebases~\citep{jimenez2024swebenchlanguagemodelsresolve}.
+% Recent advances in large language models have enabled rapid progress on repository-level software engineering tasks, such as resolving real-world GitHub issues in large codebases~\citep{jimenez2024swebenchlanguagemodelsresolve}.
 
-A critical prerequisite is \textbf{code localization}: given an issue description and a repository, an agent must identify the relevant files and finer-grained code entities (e.g., classes and functions) to modify~\citep{xia2024agentlessdemystifyingllmbasedsoftware}.
+On repository-level coding tasks such as those in the popular SWE-Bench benchmark \citep{jimenez2024swebenchlanguagemodelsresolve}, a critical first step is \textbf{code localization}: given an issue description and a repository, the system must identify the relevant files and finer-grained code entities (e.g., classes and functions) to modify~(\autoref{sec:background}; \citet{husain2019codesearchnet,xia2024agentless}).
+This is challenging in large repositories with complex interdependencies, and relying on general-purpose language models to solve this localization problem as part of the agentic coding loop can result in high costs, failed fixes, and code bloat~\citep{hong2025context}.
 
-This is challenging in large repositories with complex interdependencies, where early agent steps are often dominated by navigation and search~\citep{cognition2025swegrep}. Inaccurate search wastes limited context budget and exacerbates performance degradation at long input lengths~\citep{hong2025context}.
+To address this issue, it is also common to incorporate some variety of specialized localization module to acquire the relevant context from large codebases in a more efficient and effective manner.
+Traditionally, this code search was performed through semantic code search using vector databases \citep{xia2024agentless,wang2025coderag,xie2025swe}.
 
-To address this inefficiency, the community has begun exploring specialized \textbf{localization} subagents that identify relevant code before handing off to a downstream code editing agent, rather than relying on a monolithic agent to perform both search and editing~\citep{zhang2026toolenoughreinforcementlearning}.
+In contrast, a number of recent methods have investigated \emph{agentic code search}, using agents to iteratively uncover the evidence that is necessary to solve the issue under consideration.
+Typically these methods have involved significant modifications to the agent itself to incorporate static analysis of the codebase, such as LocAgent's repository graph navigation \citep{chen-etal-2025-locagent} and RepoNavigator's ``jump'' tool, allowing jumping between files \citep{zhang2025one}.
+While well-grounded, these necessitate the use of static analysis tools tailored to a particular programming language, increasing operational complexity of deploying such agents on a wide variety of coding scenarios.
+Simultaneously, there have been a number of anecdotal reports from industry regarding reinforcement learning methods that increase the ability of agents to perform localization rapidly \citep{cognition2025swegrep,cursor2025composer}, with varying levels of detail but with no clear training recipe.
 
-Despite these advances, most high-performing code localization systems remain closed-source. Some open-source alternatives (e.g., LocAgent~\citep{chen-etal-2025-locagent}) use proprietary API trajectories (e.g., Claude-3.5) for distillation, which can limit reproducibility and deployment in privacy-sensitive settings. RepoNavigator~\citep{zhang2026toolenoughreinforcementlearning} demonstrates RL training without distillation for repository-level agents; in contrast, we focus on training a dedicated localization subagent with a lightweight tool scaffold and multi-level F1 rewards.
+Given this background, we address the fundamental research question: \emph{given an appropriate reinforcement learning algorithm, what is an effective recipe to train a code localization agent that simply uses terminal and file-use tools typical of more generic coding agents, yet achieves competitive or superior accuracy with agents using special-purpose tools?}
+In this work, we provide the first public demonstration of such a recipe, which involves scalable methods for data and environment creation (\autoref{sec:data_creation}), a standard agent scaffold (\autoref{sec:agent_scaffold}), as well as careful attention to reward design (\autoref{sec:reward_design}) and training methods (\autoref{sec:train_algo}).
+In experiments (\autoref{sec:experiments}, \autoref{sec:results}), we find that the resulting model \methodname achieves accuracy greater than or competitive with existing methods on a variety of localization datasets derived from SWE-Bench Lite, Verified, and Pro.
+Importantly, all models and code will be released publicly, building a strong baseline for future development in the community to build upon.
 
-In this work, we present \textbf{an open-source recipe for training dedicated code localization agents using reinforcement learning}. Our contributions are three-fold: \yccomment{To be refined later.}
-\sonicomment{We should add some summary of the results here saying that our training recipe is outperforming closed-source models + complex scaffolds, and even 8x larger models on Pro/Verified/Lite}
-\begin{enumerate}
-    \item \textbf{Multi-level localization with RL training}: We formulate code localization as multi-level target prediction at three granularities (file, class, and function), and optimize multi-level F1 rewards. We train \methodname with GSPO directly from a pretrained open-source model, without closed-source distillation, and use a simple turn-completion reward to stabilize multi-turn training.
+% To address this inefficiency, the community has begun exploring specialized \textbf{localization} subagents that identify relevant code before handing off to a downstream code editing agent, rather than relying on a monolithic agent to perform both search and editing~\citep{zhang2026toolenoughreinforcementlearning}.
+
+% Despite these advances, most high-performing code localization systems remain closed-source. Some open-source alternatives (e.g., LocAgent~\citep{chen-etal-2025-locagent}) use proprietary API trajectories (e.g., Claude-3.5) for distillation, which can limit reproducibility and deployment in privacy-sensitive settings. RepoNavigator~\citep{zhang2026toolenoughreinforcementlearning} demonstrates RL training without distillation for repository-level agents; in contrast, we focus on training a dedicated localization subagent with a lightweight tool scaffold and multi-level F1 rewards.
+
+% In this work, we present \textbf{an open-source recipe for training dedicated code localization agents using reinforcement learning}. Our contributions are three-fold: \yccomment{To be refined later.}
+% \sonicomment{We should add some summary of the results here saying that our training recipe is outperforming closed-source models + complex scaffolds, and even 8x larger models on Pro/Verified/Lite}
+% \yccomment{Agreed. I’ll revise this after the details done; and please flag any inaccuracies.}
+% \begin{enumerate}
+%     \item \textbf{Multi-level localization with RL training}: We formulate code localization as multi-level target prediction at three granularities (file, class, and function), and optimize multi-level F1 rewards. We train \methodname with GSPO directly from a pretrained open-source model, without closed-source distillation, and use a simple turn-completion reward to stabilize multi-turn training.
     
-    \item \textbf{Simple, reproducible agent scaffold}: We build \methodname on top of OpenHands with a minimal tool set (\texttt{Terminal} and \texttt{Localization\-Finish}). This avoids heavyweight repository indexing or graph construction, and does not require installing repository dependencies or containerized execution, while supporting multi-turn localization.
+%     \item \textbf{Simple, reproducible agent scaffold}: We build \methodname on top of OpenHands with a minimal tool set (\texttt{Terminal} and \texttt{Localization\-Finish}). This avoids heavyweight repository indexing or graph construction, and does not require installing repository dependencies or containerized execution, while supporting multi-turn localization.
     
-    \item \textbf{Competitive performance with full release}: \methodname achieves competitive localization performance on SWE-Bench Lite, SWE-Bench Verified, and SWE-Bench Pro~\citep{jimenez2024swebenchlanguagemodelsresolve,chowdhury2024swebenchverified,deng2025swebenchproaiagents}. We release training code, reward functions, model checkpoints, and evaluation datasets. \sonicomment{Do we actually need to submit the anonymized code here or just promise?}
-\end{enumerate}
+%     \item \textbf{Competitive performance with full release}: \methodname achieves competitive localization performance on SWE-Bench Lite, SWE-Bench Verified, and SWE-Bench Pro~\citep{jimenez2024swebenchlanguagemodelsresolve,chowdhury2024swebenchverified,deng2025swebenchproaiagents}. We release training code, reward functions, model checkpoints, and evaluation datasets. \sonicomment{Do we actually need to submit the anonymized code here or just promise?}
+    
+    
+% \end{enumerate}
 
-Our work demonstrates that with careful reward design and training techniques, open-source models can achieve competitive code localization performance without relying on expensive proprietary models or closed-source distillation.
+% Our work demonstrates that with careful reward design and training techniques, open-source models can achieve competitive code localization performance without relying on expensive proprietary models or closed-source distillation.

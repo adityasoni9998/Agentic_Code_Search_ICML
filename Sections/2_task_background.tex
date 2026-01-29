@@ -1,9 +1,15 @@
-\section{Background/Task Definition}
+\section{Code Localization}
+\label{sec:background}
 
-Software engineering tasks often involve solving GitHub issues in a code repository. These issues describe the underlying problem in natural language and may also include code snippets to reproduce the bug and related error logs. Agents for automated issue resolution need to identify relevant locations from the code repository before editing the codebase to fix the issue. Therefore, code localization is an essential pre-requisite step for the issue resolution task. 
+% \gncomment{We need math here.}
+
+Software engineering tasks often involve solving GitHub issues in a code repository. These issues describe the underlying problem in natural language and may also include code snippets to reproduce the bug and related error logs. Agents for automated issue resolution need to identify relevant locations from the code repository before editing the codebase to fix the issue. This process of finding parts of repository is called code-localization and is regarded as an essential pre-requisite step for the issue resolution task. 
+
+Formally, given an issue description regarding a bug or question related to a repository $x \in \mathcal{X}$, the task of code localization is to predict a set of relevant items $y \subset \mathcal{U}$ where $\mathcal{U}$ represents all possible sets of items (file name, modules, functions, or specific code lines). Such a system would be trained to maximize the Dice coefficient based on the target set $\hat{y} \subset \mathcal{U}$, $\text{Dice}(y, \hat{y}) = \frac{2 |y \cap \hat{y}|}{|y| + |\hat{y}|}$.
+% $y \sim f(x)$
 
 % In fact, tasks such as SWE-Bench~\cite{jimenez2024swebenchlanguagemodelsresolve} have early variants where the code-localization part has already been "solved" by including the relevant files in the prompt.
 % While various 
-Traditional information retrieval methods often rely on heuristics such as semantic similarity between keywords and context. Agentic code-search systems, on the other hand, enable more targeted repository exploration via tool use.
+% Traditional information retrieval methods often rely on heuristics such as semantic similarity between keywords and context. Agentic code-search systems, on the other hand, enable more targeted repository exploration via tool use.
 
-In a code localization task, a system must return a set of relevant targets. These targets may have hierarchical attributes corresponding to the file, module/class, or function level (our work considers these three levels of granularity). Performance is measured using F1, which accounts for false positives and false negatives in the prediction.
+% In a code localization task, a system must return a set of relevant targets. These targets may have hierarchical attributes corresponding to the file, module/class, or function level (our work considers these three levels of granularity). Performance is measured using F1, which considers both precision and recall of the retrieval system.

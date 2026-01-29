@@ -1,4 +1,4 @@
-\section{Method}
+\section{\methodname: An Agent for Code Search}
 
 In this section, we describe the method used for training \methodname - training data curation, design of our agent scaffold, reward function used during training, and the RL algorithm we use.
 
@@ -11,12 +11,13 @@ We now describe our methodology for curating our training data and developing th
 
 First, we filter out all pull requests from our training data that add or remove files as files added by a PR cannot be predicted, and we cannot determine relevant ground-truth modules and entities for deleted files. Second, we exclude all non-Python files (e.g., README.md) modified by the PR from the ground truth, as we cannot extract function- or module-level information from such files. Third, we discard instances with empty issue descriptions. Finally, we extend the original processing logic of \citet{chen-etal-2025-locagent} to correctly handle several important edit operations: detecting the addition of functions and class attributes at the module and file levels, capturing changes to imports and global variables at the file level, and ignoring edits to docstrings in functions and classes.
 
-We prepare the environment for the agent by cloning the specific commit of the repository $\mathcal{R}$ in a specific location known to the agent. Since code localization does not require executing code from the repository, we do not  install any repository dependency nor apply any containerization. Unlike prior methods like LocAgent~\citep{chen-etal-2025-locagent}, our deliberate choice a simple agent scaffold \emph{significantly} simplifies setting up the environment for the agent as it does not require access to a code graph, dependency parser, vector database etc. \sonicomment{TODO: add concrete info here from baselines and explain why we have a simpler setup without graph/vector index, etc.}
+We prepare the environment for the agent by cloning the specific commit of the repository $\mathcal{R}$ in a specific location known to the agent. Since code localization does not require executing code from the repository, we do not  install any repository dependency nor apply any containerization. Unlike prior methods like LocAgent~\citep{chen-etal-2025-locagent} which require building code graphs to build training dataset, our deliberate choice a simple agent scaffold \emph{significantly} simplifies setting up the environment for the agent as it does not require access to a code graph, dependency parser, vector database etc.
+% \sonicomment{TODO: add concrete info here from baselines and explain why we have a simpler setup without graph/vector index, etc.}
 
 % After preprocessing, the resulting dataset consists of 39K instances drawn from 131 different repositories
  % We utilize the SWE-smith~\citep{yang2025swesmithscalingdatasoftware} dataset during training which consists of a total of 39K instances from 131 repositories after preprocessing and filtering.
 
-\tycomment{Add a table with some statistics about the dataset}\sonicomment{ It is not top priority rn, if you have it ready, please add it to appendix and add a reference here pls.}
+% \tycomment{Add a table with some statistics about the dataset}\sonicomment{ It is not top priority rn, if you have it ready, please add it to appendix and add a reference here pls.}
 
 % \begin{table}
 %     \centering
@@ -31,8 +32,8 @@ We prepare the environment for the agent by cloning the specific commit of the r
 We use the OpenHands Software Agent SDK~\cite{wang2025openhandssoftwareagentsdk} as the agent scaffold for \methodname, given its strong performance on numerous software engineering benchmarks as a result of its modular design, robust implementation of various crucial tools (for e.g. terminal, file editor, etc.), and the ability to augment the scaffold with additional tools, and integrate the agent scaffold with our training backend.
 
 % , given its well-designed  OpenHands  Software-Agent-SDK handles the processes such as constructing the complete system message that includes the tool description, multi-turn process along with stop-condition. 
-In particular, the agent is equipped with 2 tools: the \texttt{Terminal} tool that allows execution of bash commands like \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, and the \texttt{LocalizationFinish} tool to submit the predicted files, modules, and functions after completing the localization. To support faster execution of grep-like commands, we additionally ensure that ripgrep~\footnote{https://github.com/BurntSushi/ripgrep} is installed in the agent's environment.
-\sonicomment{TODO: add prompts and tool definitions in appendix}
+In particular, the agent is equipped with 2 tools: the \texttt{Terminal} tool that allows execution of bash commands like \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, and the \texttt{LocalizationFinish} tool to submit the predicted files, modules, and functions after completing the localization. To support faster execution of grep-like commands, we additionally ensure that ripgrep~\footnote{https://github.com/BurntSushi/ripgrep} is installed in the agent's environment. For all our experiments, we prompt \methodname using System and User prompts that can be found in \autoref{appendix:prompts}.
+% \sonicomment{TODO: add prompts and tool definitions in appendix}
 
 \subsection{Reward Design}\label{sec:reward_design}
 
@@ -69,7 +70,9 @@ Following DR. GRPO~\cite{liu2025understandingr1zeroliketrainingcritical}, we rem
 \begin{align}
     \hat{A}_i = r_i - \text{mean}(\mathbf{r}), \mathbf{r} = \{r_0, ..., r_N\}
 \end{align}
-In preliminary experiments, we found GRPO~\cite{shao2024deepseekmathpushinglimitsmathematical} is prone to failure later in training. We experience hardware issues (appendix)
+In preliminary experiments, we found GRPO~\cite{shao2024deepseekmathpushinglimitsmathematical} is prone to a collapse later in training, where the tool-calling performance of the model would significantly degrade and would cause zero rewards for most of the rollouts at each training step. 
+% \sonicomment{I feel we should skip hardware issues -- this is in no way aligned with the current framing and raises more concerns about correctness of our setup than helping}
+% We experience hardware issues (appendix)
 
 % \subsection{Implementation}
 
