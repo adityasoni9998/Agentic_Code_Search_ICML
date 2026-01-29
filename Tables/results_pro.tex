@@ -1,34 +1,86 @@
 
+
+
+% Define the custom Light Golden color
 \begin{table*}[t]
-\caption{\methodname outperforms competitive baselines on SWE-Bench Pro for file, module, and function-level retrieval, with significantly higher F1 scores. We see particularly large gains in function-level localization highlighting the effectiveness of \methodname in locating relevant code snippets within files. All models from the Qwen2.5 family are instruct variants, and all the recall, precision, and F1 scores are in \%}
+\caption{\methodname{} outperforms competitive baselines on SWE-Bench Pro for file, module, and function-level retrieval, with significantly higher F1 scores. We see particularly large gains in function-level localization highlighting the effectiveness of \methodname{} in locating relevant code snippets within files. All models from the Qwen2.5 family are instruct variants, and all the recall, precision, and F1 scores are in \%.}
 \centering
-\renewcommand{\arraystretch}{1.6}
+\renewcommand{\arraystretch}{1.25} 
+\setlength{\tabcolsep}{4.5pt} 
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{c|c|c*{9}{|c}}
+% Restored vertical bars (|) between the first three columns
+\begin{tabular}{l|l|c|ccc|ccc|ccc}
+% \toprule
 \toprule
-\toprule
-\multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multirow{2}{*}{\textbf{Training Algo.}} & \multicolumn{3}{|c}{\textbf{File-level}} & \multicolumn{3}{|c}{\textbf{Module-level}} & \multicolumn{3}{|c}{\textbf{Function-level}} \\
-\cline{4-12}
-& & & Rec. & Prec. & \textbf{F1} & Rec. & Prec. & \textbf{F1} & Rec. & Prec. & \textbf{F1} \\
+\multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multirow{2}{*}{\textbf{Algo.}} & \multicolumn{3}{c|}{\textbf{File-level}} & \multicolumn{3}{c|}{\textbf{Module-level}} & \multicolumn{3}{c}{\textbf{Function-level}} \\
+% \cmidrule{4-12}
+& & & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. \\
 \midrule
-Agentless & \multirow{4}{*}{Qwen2.5-32B} & - & 43.07 & 13.89 & 20.07 & - & - & - & 11.08 & 7.31 & 7.98 \\
-\cmidrule{1-1}\cmidrule{3-12}
-CoSIL & & - & 48.87 & 14.03 & 20.95 & - & - & - & 14.03 & 6 & 7.67 \\
-\cmidrule{1-1}\cmidrule{3-12}
-LocAgent & & - & 25.73 & 0.38 & 19.77 & - & - & - & 8.72 & 0.17 & 4.3 \\
-\cmidrule{1-1}\cmidrule{3-12}
-RepoSearcher & & - & 9 & 2.52 & 3.81 & & & & 2.52 & 2.46 & 2.31 \\
+
+Agentless & \multirow{4}{*}{Qwen2.5-32B} & - & 
+20.07 & 13.89 & 43.07 & 
+- & - & - & 
+7.98 & 7.31 & 11.08 \\
+
+CoSIL & & - & 
+20.95 & 14.03 & 48.87 & 
+- & - & - & 
+7.67 & 6 & 14.03 \\
+
+LocAgent & & - & 
+19.77 & 0.38 & 25.73 & 
+- & - & - & 
+4.3 & 0.17 & 8.72 \\
+
+RepoSearcher & & - & 
+3.81 & 2.52 & 9 & 
+- & - & - & 
+2.31 & 2.46 & 2.52 \\
 \midrule
-\multirow{3}{*}{RepoNavigator} & Qwen2.5-7B & \multirow{3}{*}{GRPO} & 36.36 & 48.13 & 39.74 & - & - & - & 12.33 & 21.26 & 14.29 \\
-& Qwen2.5-14B & & 46.85 & 58.64 & 49.72 & - & - & - & 16.05 & 25.25 & 18.06 \\
-& Qwen2.5-32B & & 53.49 & 68.69 & 57.57 & - & - & - & 18.13 & 29.44 & 20.72 \\
+
+\multirow{3}{*}{RepoNavigator} & Qwen2.5-7B & \multirow{3}{*}{GRPO} & 
+39.74 & 48.13 & 36.36 & 
+- & - & - & 
+14.29 & 21.26 & 12.33 \\
+
+& Qwen2.5-14B & & 
+49.72 & 58.64 & 46.85 & 
+- & - & - & 
+18.06 & 25.25 & 16.05 \\
+
+& Qwen2.5-32B & & 
+\textbf{57.57} & 68.69 & \underline{53.49} & 
+- & - & - & 
+20.72 & 29.44 & 18.13 \\
 \midrule
-\multirow{5}{*}{OpenHands} & Qwen3-4B-Instr. & - & 35.59 & 44.42 & 36.96 & 10.19 & 17.46 & 11.78 & 7.01 & 12.16 & 8.12 \\
-& Qwen3-14B & - & 48.22 & 28.48 & 30.08 & 14.21 & 13.82 & 11.87 & 9.92 & 9.97 & 8.2 \\
-& Qwen3-32B-think & - & 54.55 & 49.65 & 46.85 & 22.62 & 27.18 & 21.94 & 11.93 & 17.82 & 12.31 \\
-\cmidrule{2-12}
-& \methodname-4B & \multirow{2}{*}{GSPO} & 46.16 & 68.98 & 51.77 & 31.13 & 56.05 & 36.97 & 23.73 & 48.65 & 29.03 \\
-& \methodname-14B & & 48.81 & 68.81 & 53.63 & 32.02 & 53.8 & 37.13 & 23.76 & 46.09 & 28.74 \\
+
+\multirow{5}{*}{OpenHands} & Qwen3-4B-Instr. & - & 
+36.96 & 44.42 & 35.59 & 
+11.78 & 17.46 & 10.19 & 
+8.12 & 12.16 & 7.01 \\
+
+& Qwen3-14B & - & 
+30.08 & 28.48 & 48.22 & 
+11.87 & 13.82 & 14.21 & 
+8.2 & 9.97 & 9.92 \\
+
+& Qwen3-32B-think & - & 
+46.85 & 49.65 & \textbf{54.55} & 
+21.94 & 27.18 & 22.62 & 
+12.31 & 17.82 & 11.93 \\
+
+\rowcolor{lightgolden}
+ & 
+\textbf{\methodname-4B (\textit{Ours})} & & 
+51.77 & \textbf{68.98} & 46.16 & 
+\underline{36.97} & \textbf{56.05} & \underline{31.13} & 
+\textbf{29.03} & \textbf{48.65} & \underline{23.73} \\
+
+\rowcolor{lightgolden}
+& \textbf{\methodname-14B (\textit{Ours})} & \multirow{-2}{*}{GSPO} & 
+\underline{53.63} & \underline{68.81} & 48.81 & 
+\textbf{37.13} & \underline{53.8} & \textbf{32.02} & 
+\underline{28.74} & \underline{46.09} & \textbf{23.76} \\
 \bottomrule
 \end{tabular}%
 }

@@ -1,10 +1,15 @@
 \section{Results}\label{sec:results}
 
+\sonicomment{For personal reference, the three key takeaways from the results tables:
+
+1. 
+
+}
 In this section, we discuss the experimental results of \methodname. We begin by discussing overall performance on 3 benchmarks. Then, we discuss comparisons with existing approaches. 
 
-\sonicomment{Shift to analysis}
+\sonicomment{Shift to analysis section -- we don't know if this works yet}
 Finally, we observe how \methodname affects downstream performance by aiding other agents as a subagent in solving SWE tasks.
-
+\input{Tables/results_summary}
 \subsection{\methodname as a highly competitive code-localization agent}
 
 \methodname for both 4B and 14B sizes perform at a much higher F1 level on all three SWE-tasks. Notably, while lagging behind RepoNavigator-32B on file-level F1, \methodname achieves higher function-level F1
@@ -19,7 +24,7 @@ Finally, we observe how \methodname affects downstream performance by aiding oth
 
 % In contrast, 
 
-The introduction of reinforcement learning-based training yields substantial improvements with approaches such as RepoNavigator~\cite{} with GRPO result in both higher precision and recall.
+The introduction of reinforcement learning-based training yields substantial improvements with approaches such as RepoNavigator~\cite{zhang2026toolenoughreinforcementlearning} with GRPO result in both higher precision and recall.
 
 % \methodname models within the OpenHands framework, which achieve competitive results with significantly fewer parameters. CS-OSS-4B reaches 51.77 F1 at the file level and 29.03 F1 at the function level—the latter representing a 136% improvement over the untrained Qwen3-32B-think model (12.31 F1) despite being 8× smaller.
 % The performance gap between trained and untrained models widens progressively at finer granularities. At the function level, where precise localization is most challenging, GSPO-trained models achieve F1 scores of 28.74–29.03 compared to 7.67–12.31 for untrained approaches. This disparity suggests that specialized training is essential for capturing fine-grained code structure and semantic relationships. Furthermore, the diminishing returns observed between CS-OSS-4B and CS-OSS-14B (29.03 vs. 28.74 function-level F1) indicate that GSPO training enables efficient utilization of model capacity, achieving near-optimal performance at smaller scales. 

@@ -14,7 +14,6 @@ First, we filter out all pull requests from our training data that add or remove
 We prepare the environment for the agent by cloning the specific commit of the repository $\mathcal{R}$ in a specific location known to the agent. Since code localization does not require executing code from the repository, we do not  install any repository dependency nor apply any containerization. Unlike prior methods like LocAgent~\citep{chen-etal-2025-locagent}, our deliberate choice a simple agent scaffold \emph{significantly} simplifies setting up the environment for the agent as it does not require access to a code graph, dependency parser, vector database etc. \sonicomment{TODO: add concrete info here from baselines and explain why we have a simpler setup without graph/vector index, etc.}
 
 % After preprocessing, the resulting dataset consists of 39K instances drawn from 131 different repositories
-\sonicomment{I have shifted the SWE-Smith para to experimental setup}
  % We utilize the SWE-smith~\citep{yang2025swesmithscalingdatasoftware} dataset during training which consists of a total of 39K instances from 131 repositories after preprocessing and filtering.
 
 \tycomment{Add a table with some statistics about the dataset}\sonicomment{ It is not top priority rn, if you have it ready, please add it to appendix and add a reference here pls.}

@@ -19,6 +19,17 @@
 % Attempt to make hyperref and algorithmic work together better:
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 \newcommand{\methodname}{\texttt{CS-OSS}\xspace}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+
+% Define a custom color for the highlighted rows
+\definecolor{highlightcolor}{gray}{0.92}
+\definecolor{lightgolden}{rgb}{1.0, 0.95, 0.85} % For Method rows
+\definecolor{headergray}{rgb}{0.92, 0.92, 0.92} % For Closed-Source Header
+\definecolor{headerblue}{rgb}{0.88, 0.95, 1.0}  % For Open-Source Header
+
 % Use the following line for the initial blind version submitted for review:
 \usepackage[nohyperref]{icml2026}
 
@@ -65,7 +76,7 @@
 
 % The \icmltitle you define below is probably too long as a header.
 % Therefore, a short form for the running title is supplied here:
-% \icmltitlerunning{Submission and Formatting Instructions for ICML 2026}
+\icmltitlerunning{Code-Search OSS}
 
 \begin{document}
 
