@@ -1,36 +1,43 @@
 
 \begin{table*}[t]
-\caption{Summary of SWE-Bench results across Verified, Pro, and Lite variants. \methodname achieves state-of-the-art performance among open-source models, frequently outperforming 32B-parameter baselines and narrowing the gap with proprietary models.}
+\caption{Summary of SWE-Bench results across Pro, Verified, and Lite variants. \methodname achieves state-of-the-art performance among open-source models, frequently outperforming 32B-parameter baselines and narrowing the gap with proprietary models.}
 \centering
 % \renewcommand{\arraystretch}{1}
 % \resizebox{\textwidth}{!}{%
-\begin{tabular}{l|l|c|c} % Reduced to 4 columns
+\begin{tabular}{c|c|c|c} % Reduced to 4 columns
 \toprule
 \textbf{Benchmark} & \textbf{Method} & \textbf{File-level F1} & \textbf{Function-level F1} \\
 \midrule
 
-% SWE-BENCH VERIFIED
-& RepoNavigator-Claude-4.5-Sonnet & \textbf{79.94} & \textbf{43.62} \\
+& RepoNavigator-7B & 51.63 & 27.49 \\
 & RepoNavigator-32B & 67.75 & 34.09 \\
+\rowcolor{lightgolden}
+\cellcolor{white} & \textbf{\methodname-1.7B} & 55.46 & 28.22 \\
 \rowcolor{lightgolden}
 \cellcolor{white} & \textbf{\methodname-4B} & 68.52 & 36.78 \\
 \rowcolor{lightgolden}
 \cellcolor{white} \multirow{-4}{*}{SWE-Bench Verified} & \textbf{\methodname-14B} & \underline{68.57} & \underline{40.32} \\
-
+& RepoNavigator + GPT-5-chat & 58.88 & 31.17 \\
+& RepoNavigator + Claude-Sonnet-4.5 & \textbf{79.94} & \textbf{43.62} \\
 \midrule
 
 % SWE-BENCH PRO
+& RepoNavigator-7B & 39.74 & 14.29 \\
 & RepoNavigator-32B & \textbf{57.57} & 20.72 \\
+\rowcolor{lightgolden}
+\cellcolor{white} & \textbf{\methodname-1.7B} & 40.96 & 18.24 \\
 \rowcolor{lightgolden}
 \cellcolor{white} & \textbf{\methodname-4B} & 51.77 & \textbf{29.03} \\
 \rowcolor{lightgolden}
-\cellcolor{white} \multirow{-3}{*}{SWE-Bench Pro} & \textbf{\methodname-14B} & \underline{53.63} & \underline{28.74} \\
-
+\cellcolor{white} \multirow{-5}{*}{SWE-Bench Pro} & \textbf{\methodname-14B} & \underline{53.63} & \underline{28.74} \\
 \midrule
 
+% SWE-BENCH VERIFIED
+
 % SWE-BENCH LITE
-& LocAgent-Claude-3.5-Sonnet & 31.39 & 27.53 \\
-& OpenHands-Qwen3-32B-Think & 58.98 & 23.76\\
+& OpenHands + Qwen3-32B (Thinking) & 58.98 & 23.76\\
+\rowcolor{lightgolden}
+\cellcolor{white} & \textbf{\methodname-1.7B} & \underline{56.57} & \underline{27.07} \\
 \rowcolor{lightgolden}
 \cellcolor{white} & \textbf{\methodname-4B} & \underline{67.03} & \underline{39.87} \\
 \rowcolor{lightgolden}

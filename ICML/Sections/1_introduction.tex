@@ -11,13 +11,13 @@ Traditionally, this code search was performed through semantic code search using
 
 In contrast, a number of recent methods have investigated \emph{agentic code search}, using agents to iteratively uncover the evidence that is necessary to solve the issue under consideration.
 Typically these methods have involved significant modifications to the agent itself to incorporate static analysis of the codebase, such as LocAgent's repository graph navigation \citep{chen-etal-2025-locagent} and RepoNavigator's ``jump'' tool, allowing jumping between files \citep{zhang2025one}.
-While well-grounded, these necessitate the use of static analysis tools tailored to a particular programming language, increasing operational complexity of deploying such agents on a wide variety of coding scenarios.
+While well-grounded, these necessitate the use of static analysis tools tailored to a \emph{particular} programming language, increasing operational complexity of deploying such agents on a broader variety of coding scenarios.
 Simultaneously, there have been a number of anecdotal reports from industry regarding reinforcement learning methods that increase the ability of agents to perform localization rapidly \citep{cognition2025swegrep,cursor2025composer}, with varying levels of detail but with no clear training recipe.
 
-Given this background, we address the fundamental research question: \emph{given an appropriate reinforcement learning algorithm, what is an effective recipe to train a code localization agent that simply uses terminal and file-use tools typical of more generic coding agents, yet achieves competitive or superior accuracy with agents using special-purpose tools?}
+Given this background, we address the fundamental research question: \emph{given an appropriate reinforcement learning algorithm, what is an effective recipe to train a code localization agent that simply uses the terminal tool typical of more generic coding agents, yet achieves competitive or superior accuracy over agents using special-purpose tools?}
 In this work, we provide the first public demonstration of such a recipe, which involves scalable methods for data and environment creation (\autoref{sec:data_creation}), a standard agent scaffold (\autoref{sec:agent_scaffold}), as well as careful attention to reward design (\autoref{sec:reward_design}) and training methods (\autoref{sec:train_algo}).
 In experiments (\autoref{sec:experiments}, \autoref{sec:results}), we find that the resulting model \methodname achieves accuracy greater than or competitive with existing methods on a variety of localization datasets derived from SWE-Bench Lite, Verified, and Pro.
-Importantly, all models and code will be released publicly, building a strong baseline for future development in the community to build upon.
+Importantly, all models and code are released publicly, building a strong baseline for future development in the community to build upon.
 
 % To address this inefficiency, the community has begun exploring specialized \textbf{localization} subagents that identify relevant code before handing off to a downstream code editing agent, rather than relying on a monolithic agent to perform both search and editing~\citep{zhang2026toolenoughreinforcementlearning}.
 

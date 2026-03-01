@@ -4,7 +4,7 @@
 \renewcommand{\arraystretch}{1.25}
 \setlength{\tabcolsep}{4.5pt}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{l|l|c|ccc|ccc|ccc}
+\begin{tabular}{c|c|c|ccc|ccc|ccc}
 \toprule
 \multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multirow{2}{*}{\textbf{Algo.}} & \multicolumn{3}{c|}{\textbf{File-level}} & \multicolumn{3}{c|}{\textbf{Module-level}} & \multicolumn{3}{c}{\textbf{Function-level}} \\
 % No \cmidrule here to ensure vertical lines are continuous
@@ -20,7 +20,9 @@ RepoSearcher & Claude-3.7-Sonnet & - & 32.30 & 20.24 & \textbf{89.24} & - & - & 
 \multirow{3}{*}{RepoNavigator} & GPT-5-Chat & - & 58.88 & 61.87 & 58.17 & - & - & - & 31.17 & 34.56 & 30.42 \\
 & Claude-3.7-Sonnet & - & 73.01 & 75.95 & 72.26 & - & - & - & 31.72 & 34.43 & 31.03 \\
 & Claude-4.5-Sonnet & - & 79.94 & 81.92 & 80.68 & - & - & - & 43.62 & 45.76 &43.97 \\
-\multirow{2}{*}{OpenHands} & GPT-5 & - & 78.18 & 79.25 & 80.80 & 61.17 & 62.23 & 63.35 & 54.79 & 56.80 & 56.53 \\
+\multirow{2}{*}{OpenHands} & GPT-5 & - & 3.20 & 3.20 & 3.20 & 2.60 & 2.60 & 2.60 & 2.60 & 2.60 & 2.60 \\
+& Claude-4.5-Sonnet & - & 0.80 & 0.80 & 0.80 & 0.40 & 0.40 & 0.40 & 0.40 & 0.40 & 0.40\\
+\multirow{2}{*}{OpenHands+reminder} & GPT-5 & - & 78.18 & 79.25 & 80.80 & 61.17 & 62.23 & 63.35 & 54.79 & 56.80 & 56.53 \\
 & Claude-4.5-Sonnet & - & 82.01 & 84.50 & 82.86 & 67.19 & 70.11 & 67.47 & 61.78 & 65.42 & 61.99 \\
 \midrule
 
@@ -43,16 +45,17 @@ OrcaLoca & & - & 58.11 & 59.51 & 59.57 & - & - & - & 28.72 & 25.59 & 39.14 \\
 & Qwen2.5-14B & & 58.90 & 58.97 & 61.60 & - & - & - & 29.23 & 30.08 & 31.02 \\
 & Qwen2.5-32B & & 67.75 & 70.76 & 67.29 & - & - & - & 34.09 & 37.19 & 33.71 \\
 \midrule
-\multirow{5}{*}{OpenHands} & Qwen3-4B-Instruct & - & 49.73 & 49.69 & 53.34 & 19.32 & 19.86 & 20.15 & 13.27 & 14.17 & 13.74 \\
+\multirow{7}{*}{OpenHands} & Qwen3-1.7B & - & 2.40 & 2.09 & 3.60 & 0.37 & 0.32 & 0.60 & 0.34 & 0.32 & 0.50 \\
+& Qwen3-4B-Instruct & - & 49.73 & 49.69 & 53.34 & 19.32 & 19.86 & 20.15 & 13.27 & 14.17 & 13.74 \\
 & Qwen3-14B & - & 43.13 & 36.49 & 71.20 & 22.86 & 20.40 & 33.04 & 16.08 & 14.51 & 23.58 \\
-& Qwen3-32B-Think & - & 60.88 & 58.63 & 70.41 & 35.95 & 35.57 & 40.27 & 25.77 & 25.94 & 28.69 \\
+& Qwen3-32B (Thinking) & - & 62.91 & 59.87 & 73.63 & 34.69 & 33.85 & 39.46 & 23.99 & 24.22 & 26.86 \\
 
 % --- Method Rows ---
 \rowcolor{lightgolden}\cellcolor{white}
-& \textbf{\methodname-1.7B-RFT} & & 46.43 & 48.47 & 45.64 & 30.34 & 32.18 & 29.66 & 23.46 & 25.76 & 22.73 \\
+& \textbf{\methodname-1.7B} & RFT & 46.60 & 48.60 & 45.82 & 29.79 & 31.60 & 29.13 & 23.04 & 25.30 & 22.32 \\
 
 \rowcolor{lightgolden}\cellcolor{white}
-& \textbf{\methodname-1.7B-RFT-RL} & & 55.46 & 58.45 & 54.24 & 37.11 & 40.09 & 36.11 & 28.74 & 32.35 & 27.68 \\
+& \textbf{\methodname-1.7B} & RFT + GSPO & 55.46 & 58.40 & 54.27 & 36.45 & 39.37 & 35.46 & 28.22 & 31.77 & 27.18 \\
 
 \rowcolor{lightgolden}\cellcolor{white}
 & \textbf{\methodname-4B} & & \underline{68.52} & \textbf{71.53} & 67.74 & \underline{45.97} & \underline{49.70} & \underline{44.97} & \underline{36.78} & \underline{40.71} & 35.72 \\
