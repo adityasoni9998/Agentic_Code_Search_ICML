@@ -159,7 +159,12 @@ IMPORTANT: Your output MUST follow the below rules:\newline
 \label{tab:privileged_info_prompts2}
 \end{table*}
 
+\section{Comparing with Scaffolds that predict ranked list of top-K locations}\label{appendix:topk_discussion}
+\sonicomment{TODO}
+We find that \methodname is flexible in that it is not constrained by any specific tool nor is by maximum number of items it must return. While RepoNavigator was trained to utilize the flow of code execution, it achieves higher File-level F1 on SWE-Bench Pro, but lags in the Function-level F1 compared to \methodname. We see this a potential issue, we argue that the true interest of a SWE Agent is the parts of the code that are relevant to the issue and not generally the whole file where the issue might come from. Allowing and sub-agent such as \methodname to explore unconstrained by a particular method proves beneficial in this scenario. Additionally, our method also implies data creation that is much simpler and thus easier to scale as necessary. 
 
+Another popular approach to code localization configures the sub-agent to return $k$ number of candidate answers. A higher $k$ value has a higher recall or higher chance of returning highest number of relevant items but at the risk of also returning non-relevant ones. This poses a potential issue of distracting a SWE agent. On the other hand, reducing $k$ will alleviate this issue but at the cost of leaving out actually relevant items. In contrast, we do not configure \methodname with any $k$ and instead train it to with various cases where the correct set of items can be singular or multiple. This effectively strikes a balance between having to decide what $k$ value is appropriate.
+\section{Comparing closed-source LLMs across diverse agent scaffolds -- is a complex scaffold actually helpful?}\label{appendix:scaffold_api_discussion}
 % \section{Performance}
 
 % \input{Tables/results_verified}

@@ -1,53 +1,98 @@
 \begin{table*}[h]
-\caption{SWE-Bench Lite Results. \methodname{} demonstrates superior precision and localization capabilities, particularly at the Module and Function levels compared to other open-source baselines.}
+\caption{Results on \textbf{SWE-Bench Lite}. \methodname achieves superior or competitive performance over base LLMs up to \textbf{18$\times$ larger} under the same scaffold, narrowing the gap with leading closed-source LLMs. Qwen2.5 results use instruct variants. $^{rem}$ reminds the LLM to submit answer (\S\ref{sec:baselines}), $^\dagger$trained with RL (GRPO/GSPO); $^\ddagger$RFT from \methodname-14B; $^\triangle$RFT from Claude-3.7-Sonnet.}
 \centering
-\renewcommand{\arraystretch}{1.25}
-\setlength{\tabcolsep}{4.5pt}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4.0pt}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{c|c|c|ccc|ccc|ccc}
+\begin{tabular}{lc|ccccccccc}
 \toprule
-\multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multirow{2}{*}{\textbf{Algo.}} & \multicolumn{3}{c|}{\textbf{File-level}} & \multicolumn{3}{c|}{\textbf{Module-level}} & \multicolumn{3}{c}{\textbf{Function-level}} \\
-& & & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. \\
+\multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multicolumn{3}{c}{\textbf{File-level}} & \multicolumn{3}{c}{\textbf{Module-level}} & \multicolumn{3}{c}{\textbf{Function-level}} \\
+& & F1 & Prec. & Rec. & F1 & Prec. & Rec. & F1 & Prec. & Rec. \\
 \midrule
-
 % --- Closed Source Section ---
 \rowcolor{headergray}
-\multicolumn{12}{c}{\textbf{Closed-Source LLMs}} \\
+\multicolumn{11}{c}{\textbf{Closed-Source LLMs}} \\
 \midrule
-LocAgent & Claude-3.5-Sonnet & - & 31.39 & 18.83 & 94.16 & 29.91 & 18.18 & 86.98 & 27.53 & 17.08 & 76.61 \\
-\multirow{2}{*}{OpenHands} & GPT-5 & - & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 \\
-& Claude-Sonnet-4.5 & - & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 \\
-\multirow{2}{*}{OpenHands+reminder} & GPT-5 & - & 77.77 & 75.73 & 82.48 & 67.86 & 66.09 & 72.63 & 61.12 & 59.43 & 67.21 \\
-& Claude-Sonnet-4.5 & - & 81.87 & 80.17 & 85.40 & 69.62 & 68.87 & 72.87 & 61.11 & 61.72 & 63.72 \\
+LocAgent & Claude-3.5-Sonnet & 31.39 & 18.83 & \textbf{94.16} & 29.91 & 18.18 & \textbf{86.98} & 27.53 & 17.08 & \textbf{76.61} \\
 \midrule
-
+\multirow{2}{*}{OpenHands-Bash} & GPT-5 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 \\
+& Claude-Sonnet-4.5 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 \\
+\multirow{2}{*}{OpenHands-Bash$^{rem}$} & GPT-5 & \underline{77.77} & \underline{75.73} & 82.48 & \underline{67.86} & \underline{66.09} & 72.63 & \textbf{61.12} & \underline{59.43} & \underline{67.21} \\
+& Claude-Sonnet-4.5 & \textbf{81.87} & \textbf{80.17} & \underline{85.40} & \textbf{69.62} & \textbf{68.87} & \underline{72.87} & \underline{61.11} & \textbf{61.72} & 63.72 \\
+\midrule
 % --- Open Source Section ---
 \rowcolor{headerblue}
-\multicolumn{12}{c}{\textbf{Open-Source LLMs}} \\
+\multicolumn{11}{c}{\textbf{Open-Source LLMs}} \\
 \midrule
-\multirow{5}{*}{OpenHands} & 
-
-Qwen3-1.7B & - & 2.16 & 1.96 & 2.92 & 0.36 & 0.36 & 0.36 & 0.00 & 0.00 & 0.00 \\
-
-& Qwen3-4B-Instruct & - & 47.41 & 43.70 & 55.47 & 14.50 & 13.90 & 16.24 & 8.72 & 8.67 & 9.61 \\
-& Qwen3-14B & - & 38.63 & 31.30 & \underline{71.90} & 20.10 & 16.74 & 31.57 & 11.73 & 9.88 & 18.13 \\
-& Qwen3-32B (Thinking) & - & 58.98 & 54.26 & 71.53 & 37.20 & 34.64 & 43.98 & 23.76 & 23.11 & 26.89 \\
-
+& 
+Qwen3-1.7B & 2.16 & 1.96 & 2.92 & 0.36 & 0.36 & 0.36 & 0.00 & 0.00 & 0.00 \\
+& Qwen3-4B-Instruct & 47.41 & 43.70 & 55.47 & 14.50 & 13.90 & 16.24 & 8.72 & 8.67 & 9.61 \\
+& Qwen3-14B & 38.63 & 31.30 & \underline{71.90} & 20.10 & 16.74 & 31.57 & 11.73 & 9.88 & 18.13 \\
+& Qwen3-32B (Thinking) & 58.98 & 54.26 & 71.53 & 37.20 & 34.64 & 43.98 & 23.76 & 23.11 & 26.89 \\
 % --- Method Rows with white first column ---
-
+\multirow{-2}{*}{OpenHands-Bash} \rowcolor{lightgolden}\cellcolor{white}
+& \textbf{\methodname-1.7B-RFT}$^{\ddagger}$ & 45.99 & 45.99 & 45.99 & 34.79 & 35.22 & 34.67 & 24.51 & 25.18 & 24.39 \\
 \rowcolor{lightgolden}\cellcolor{white}
-& \textbf{\methodname-1.7B} & RFT & 45.99 & 45.99 & 45.99 & 34.79 & 35.22 & 34.67 & 24.51 & 25.18 & 24.39 \\
-
-\rowcolor{lightgolden}\cellcolor{white}
-& \textbf{\methodname-1.7B} & RFT + GSPO & 56.57 & 56.57 & 56.57 & 41.24 & 41.61 & 41.24 & 27.07 & 28.28 & 26.82 \\
-
+& \textbf{\methodname-1.7B}$^{\ddagger\dagger}$ & 56.57 & 56.57 & 56.57 & 41.24 & 41.61 & 41.24 & 27.07 & 28.28 & 26.82 \\
 \rowcolor{lightgolden}
-\cellcolor{white} & \textbf{\methodname-4B} & & \underline{67.03} & \underline{66.61} & 67.88 & \underline{53.10} & \underline{53.47} & \underline{53.65} & \underline{39.87} & \underline{41.59} & \underline{39.96} \\
-
+\cellcolor{white} & \textbf{\methodname-4B}$^{\dagger}$ & \underline{67.03} & \underline{66.61} & 67.88 & \underline{53.10} & \underline{53.47} & \underline{53.65} & \underline{39.87} & \underline{41.59} & \underline{39.96} \\
 \rowcolor{lightgolden}
-\cellcolor{white}  & \textbf{\methodname-14B} & \multirow{-2}{*}{GSPO} & \textbf{71.84} & \textbf{71.17} & \textbf{73.36} & \textbf{59.23} & \textbf{59.18} & \textbf{60.28} & \textbf{44.43} & \textbf{45.59} & \textbf{45.13} \\
+\cellcolor{white} & \textbf{\methodname-14B}$^{\dagger}$ & \textbf{71.84} & \textbf{71.17} & \textbf{73.36} & \textbf{59.23} & \textbf{59.18} & \textbf{60.28} & \textbf{44.43} & \textbf{45.59} & \textbf{45.13} \\
 \bottomrule
 \end{tabular}%
 }
 \label{tab:swe_bench_lite_results}
 \end{table*}
+% \begin{table*}[h]
+% \caption{SWE-Bench Lite Results. \methodname{} demonstrates superior precision and localization capabilities, particularly at the Module and Function levels compared to other open-source baselines.}
+% \centering
+% \renewcommand{\arraystretch}{1.25}
+% \setlength{\tabcolsep}{4.5pt}
+% \resizebox{\textwidth}{!}{%
+% \begin{tabular}{c|c|c|ccc|ccc|ccc}
+% \toprule
+% \multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multirow{2}{*}{\textbf{Algo.}} & \multicolumn{3}{c|}{\textbf{File-level}} & \multicolumn{3}{c|}{\textbf{Module-level}} & \multicolumn{3}{c}{\textbf{Function-level}} \\
+% & & & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. \\
+% \midrule
+
+% % --- Closed Source Section ---
+% \rowcolor{headergray}
+% \multicolumn{12}{c}{\textbf{Closed-Source LLMs}} \\
+% \midrule
+% LocAgent & Claude-3.5-Sonnet & - & 31.39 & 18.83 & 94.16 & 29.91 & 18.18 & 86.98 & 27.53 & 17.08 & 76.61 \\
+% \multirow{2}{*}{OpenHands} & GPT-5 & - & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 \\
+% & Claude-Sonnet-4.5 & - & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 & 0.36 \\
+% \multirow{2}{*}{OpenHands+reminder} & GPT-5 & - & 77.77 & 75.73 & 82.48 & 67.86 & 66.09 & 72.63 & 61.12 & 59.43 & 67.21 \\
+% & Claude-Sonnet-4.5 & - & 81.87 & 80.17 & 85.40 & 69.62 & 68.87 & 72.87 & 61.11 & 61.72 & 63.72 \\
+% \midrule
+
+% % --- Open Source Section ---
+% \rowcolor{headerblue}
+% \multicolumn{12}{c}{\textbf{Open-Source LLMs}} \\
+% \midrule
+% \multirow{5}{*}{OpenHands} & 
+
+% Qwen3-1.7B & - & 2.16 & 1.96 & 2.92 & 0.36 & 0.36 & 0.36 & 0.00 & 0.00 & 0.00 \\
+
+% & Qwen3-4B-Instruct & - & 47.41 & 43.70 & 55.47 & 14.50 & 13.90 & 16.24 & 8.72 & 8.67 & 9.61 \\
+% & Qwen3-14B & - & 38.63 & 31.30 & \underline{71.90} & 20.10 & 16.74 & 31.57 & 11.73 & 9.88 & 18.13 \\
+% & Qwen3-32B (Thinking) & - & 58.98 & 54.26 & 71.53 & 37.20 & 34.64 & 43.98 & 23.76 & 23.11 & 26.89 \\
+
+% % --- Method Rows with white first column ---
+
+% \rowcolor{lightgolden}\cellcolor{white}
+% & \textbf{\methodname-1.7B} & RFT & 45.99 & 45.99 & 45.99 & 34.79 & 35.22 & 34.67 & 24.51 & 25.18 & 24.39 \\
+
+% \rowcolor{lightgolden}\cellcolor{white}
+% & \textbf{\methodname-1.7B} & RFT + GSPO & 56.57 & 56.57 & 56.57 & 41.24 & 41.61 & 41.24 & 27.07 & 28.28 & 26.82 \\
+
+% \rowcolor{lightgolden}
+% \cellcolor{white} & \textbf{\methodname-4B} & & \underline{67.03} & \underline{66.61} & 67.88 & \underline{53.10} & \underline{53.47} & \underline{53.65} & \underline{39.87} & \underline{41.59} & \underline{39.96} \\
+
+% \rowcolor{lightgolden}
+% \cellcolor{white}  & \textbf{\methodname-14B} & \multirow{-2}{*}{GSPO} & \textbf{71.84} & \textbf{71.17} & \textbf{73.36} & \textbf{59.23} & \textbf{59.18} & \textbf{60.28} & \textbf{44.43} & \textbf{45.59} & \textbf{45.13} \\
+% \bottomrule
+% \end{tabular}%
+% }
+% \label{tab:swe_bench_lite_results}
+% \end{table*}

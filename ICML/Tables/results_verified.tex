@@ -1,72 +1,135 @@
-\begin{table*}[h]
-\caption{SWE-Bench Verified Results. \methodname achieves state-of-the-art performance among open-source models, bridging the gap with proprietary models like Claude 3.7.}
+\begin{table*}[!t]
+\caption{Results on \textbf{SWE-Bench Verified}. \methodname outperforms base and post-trained LLMs up to \textbf{8$\times$ larger} across multiple scaffolds, narrowing the gap with or surpassing leading closed-source LLMs. Qwen2.5 results use instruct variants. $^{rem}$ reminds the LLM to submit answer (\S\ref{sec:baselines}), $^\dagger$trained with RL (GRPO/GSPO); $^\ddagger$RFT from \methodname-14B; $^\triangle$RFT from Claude-3.7-Sonnet.}
 \centering
-\renewcommand{\arraystretch}{1.25}
-\setlength{\tabcolsep}{4.5pt}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{c|c|c|ccc|ccc|ccc}
+\begin{tabular}{lc|ccccccccc}
 \toprule
-\multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multirow{2}{*}{\textbf{Algo.}} & \multicolumn{3}{c|}{\textbf{File-level}} & \multicolumn{3}{c|}{\textbf{Module-level}} & \multicolumn{3}{c}{\textbf{Function-level}} \\
+\multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multicolumn{3}{c}{\textbf{File-level}} & \multicolumn{3}{c}{\textbf{Module-level}} & \multicolumn{3}{c}{\textbf{Function-level}} \\
 % No \cmidrule here to ensure vertical lines are continuous
-& & & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. \\
+& & F1 & Prec. & Rec. & F1 & Prec. & Rec. & F1 & Prec. & Rec. \\
 \midrule
-
 % --- Closed Source Section ---
 \rowcolor{headergray}
-\multicolumn{12}{c}{\textbf{Closed-Source LLMs}} \\
+\multicolumn{11}{c}{\textbf{Closed-Source LLMs}} \\
 \midrule
-RepoSearcher & Claude-3.7-Sonnet & - & 32.30 & 20.24 & \textbf{89.24} & - & - & - & 26.91 & 18.64 & \textbf{66.08} \\
+RepoSearcher & Claude-3.7-Sonnet & 32.30 & 20.24 & \textbf{89.24} & - & - & - & 26.91 & 18.64 & \textbf{66.08} \\
 \midrule
-\multirow{3}{*}{RepoNavigator} & GPT-5-Chat & - & 58.88 & 61.87 & 58.17 & - & - & - & 31.17 & 34.56 & 30.42 \\
-& Claude-3.7-Sonnet & - & 73.01 & 75.95 & 72.26 & - & - & - & 31.72 & 34.43 & 31.03 \\
-& Claude-4.5-Sonnet & - & 79.94 & 81.92 & 80.68 & - & - & - & 43.62 & 45.76 &43.97 \\
-\multirow{2}{*}{OpenHands} & GPT-5 & - & 3.20 & 3.20 & 3.20 & 2.60 & 2.60 & 2.60 & 2.60 & 2.60 & 2.60 \\
-& Claude-4.5-Sonnet & - & 0.80 & 0.80 & 0.80 & 0.40 & 0.40 & 0.40 & 0.40 & 0.40 & 0.40\\
-\multirow{2}{*}{OpenHands+reminder} & GPT-5 & - & 78.18 & 79.25 & 80.80 & 61.17 & 62.23 & 63.35 & 54.79 & 56.80 & 56.53 \\
-& Claude-4.5-Sonnet & - & 82.01 & 84.50 & 82.86 & 67.19 & 70.11 & 67.47 & 61.78 & 65.42 & 61.99 \\
+\multirow{3}{*}{RepoNavigator} & GPT-5-Chat & 58.88 & 61.87 & 58.17 & - & - & - & 31.17 & 34.56 & 30.42 \\
+& Claude-3.7-Sonnet & 73.01 & 75.95 & 72.26 & - & - & - & 31.72 & 34.43 & 31.03 \\
+& Claude-Sonnet-4.5 & \underline{79.94} & \underline{81.92} & 80.68 & - & - & - & 43.62 & 45.76 &43.97 \\
 \midrule
-
+\multirow{2}{*}{OpenHands-Bash} & GPT-5 & 3.20 & 3.20 & 3.20 & 2.60 & 2.60 & 2.60 & 2.60 & 2.60 & 2.60 \\
+& Claude-Sonnet-4.5 & 0.80 & 0.80 & 0.80 & 0.40 & 0.40 & 0.40 & 0.40 & 0.40 & 0.40\\
+\multirow{2}{*}{OpenHands-Bash$^{rem}$} & GPT-5 & 78.18 & 79.25 & 80.80 & \underline{61.17} & \underline{62.23} & \underline{63.35} & \underline{54.79} & \underline{56.80} & 56.53 \\
+& Claude-Sonnet-4.5 & \textbf{82.01} & \textbf{84.50} & \underline{82.86} & \textbf{67.19} & \textbf{70.11} & \textbf{67.47} & \textbf{61.78} & \textbf{65.42} & \underline{61.99} \\
+\midrule
 % --- Open Source Section ---
 \rowcolor{headerblue}
-\multicolumn{12}{c}{\textbf{Open-Source LLMs}} \\
+\multicolumn{11}{c}{\textbf{Open-Source LLMs}} \\
 \midrule
-Agentless & \multirow{5}{*}{Qwen2.5-32B} & - & 35.38 & 25.60 & 78.93 & - & - & - & 27.33 & 24.07 & 40.97 \\
-CoSIL & & - & 30.77 & 19.34 & \underline{83.50} & - & - & - & 22.11 & 14.85 & 55.38 \\
-LocAgent & & - & 44.18 & 34.18 & 79.39 & - & - & - & 21.48 & 16.29 & 46.79 \\
-OrcaLoca & & - & 58.11 & 59.51 & 59.57 & - & - & - & 28.72 & 25.59 & 39.14 \\
+CoSIL & & 30.77 & 19.34 & \underline{83.50} & - & - & - & 22.11 & 14.85 & 55.38 \\
+Agentless &  & 35.38 & 25.60 & 78.93 & - & - & - & 27.33 & 24.07 & 40.97 \\
+LocAgent & & 44.18 & 34.18 & 79.39 & - & - & - & 21.48 & 16.29 & 46.79 \\
+OrcaLoca &\multirow{-4}{*}{Qwen2.5-32B}  & 58.11 & 59.51 & 59.57 & - & - & - & 28.72 & 25.59 & 39.14 \\
 \midrule
-
 % FIXED: Used \shortstack to break lines cleanly inside the multirow
-\multirow{2}{*}{RepoSearcher} & Qwen2.5-7B & \multirow{2}{*}{\shortstack{Distillation\\[2pt]+ GRPO}} & 30.09 & 18.80 & 83.11 & - & - & - & 25.57 & 17.68 & \underline{62.38} \\
-& Qwen2.5-32B & & 32.25 & 20.24 & \textbf{88.59} & - & - & - & 28.03 & 19.36 & \textbf{68.55} \\
+\multirow{2}{*}{RepoSearcher} & Qwen2.5-7B$^{\triangle\dagger}$ & 30.09 & 18.80 & 83.11 & - & - & - & 25.57 & 17.68 & \underline{62.38} \\
+& Qwen2.5-32B$^{\triangle\dagger}$ & 32.25 & 20.24 & \textbf{88.59} & - & - & - & 28.03 & 19.36 & \textbf{68.55} \\
 \midrule
-
-\multirow{3}{*}{RepoNavigator} & Qwen2.5-7B & \multirow{3}{*}{GRPO} & 51.63 & 53.83 & 50.62 & - & - & - & 27.49 & 30.34 & 26.69 \\
-& Qwen2.5-14B & & 58.90 & 58.97 & 61.60 & - & - & - & 29.23 & 30.08 & 31.02 \\
-& Qwen2.5-32B & & 67.75 & 70.76 & 67.29 & - & - & - & 34.09 & 37.19 & 33.71 \\
+\multirow{3}{*}{RepoNavigator} & Qwen2.5-7B$^{\dagger}$ & 51.63 & 53.83 & 50.62 & - & - & - & 27.49 & 30.34 & 26.69 \\
+& Qwen2.5-14B$^{\dagger}$ & 58.90 & 58.97 & 61.60 & - & - & - & 29.23 & 30.08 & 31.02 \\
+& Qwen2.5-32B$^{\dagger}$ & 67.75 & 70.76 & 67.29 & - & - & - & 34.09 & 37.19 & 33.71 \\
 \midrule
-\multirow{7}{*}{OpenHands} & Qwen3-1.7B & - & 2.40 & 2.09 & 3.60 & 0.37 & 0.32 & 0.60 & 0.34 & 0.32 & 0.50 \\
-& Qwen3-4B-Instruct & - & 49.73 & 49.69 & 53.34 & 19.32 & 19.86 & 20.15 & 13.27 & 14.17 & 13.74 \\
-& Qwen3-14B & - & 43.13 & 36.49 & 71.20 & 22.86 & 20.40 & 33.04 & 16.08 & 14.51 & 23.58 \\
-& Qwen3-32B (Thinking) & - & 62.91 & 59.87 & 73.63 & 34.69 & 33.85 & 39.46 & 23.99 & 24.22 & 26.86 \\
-
+& Qwen3-1.7B & 2.40 & 2.09 & 3.60 & 0.37 & 0.32 & 0.60 & 0.34 & 0.32 & 0.50 \\
+& Qwen3-4B-Instruct & 49.73 & 49.69 & 53.34 & 19.32 & 19.86 & 20.15 & 13.27 & 14.17 & 13.74 \\
+& Qwen3-14B & 43.13 & 36.49 & 71.20 & 22.86 & 20.40 & 33.04 & 16.08 & 14.51 & 23.58 \\
+& Qwen3-32B (Thinking) & 62.91 & 59.87 & 73.63 & 34.69 & 33.85 & 39.46 & 23.99 & 24.22 & 26.86 \\
 % --- Method Rows ---
 \rowcolor{lightgolden}\cellcolor{white}
-& \textbf{\methodname-1.7B} & RFT & 46.60 & 48.60 & 45.82 & 29.79 & 31.60 & 29.13 & 23.04 & 25.30 & 22.32 \\
-
+& \textbf{\methodname-1.7B-RFT}$^{\ddagger}$ & 46.60 & 48.60 & 45.82 & 29.79 & 31.60 & 29.13 & 23.04 & 25.30 & 22.32 \\
 \rowcolor{lightgolden}\cellcolor{white}
-& \textbf{\methodname-1.7B} & RFT + GSPO & 55.46 & 58.40 & 54.27 & 36.45 & 39.37 & 35.46 & 28.22 & 31.77 & 27.18 \\
-
+& \textbf{\methodname-1.7B}$^{\ddagger\dagger}$ & 55.46 & 58.40 & 54.27 & 36.45 & 39.37 & 35.46 & 28.22 & 31.77 & 27.18 \\
 \rowcolor{lightgolden}\cellcolor{white}
-& \textbf{\methodname-4B} & & \underline{68.52} & \textbf{71.53} & 67.74 & \underline{45.97} & \underline{49.70} & \underline{44.97} & \underline{36.78} & \underline{40.71} & 35.72 \\
-
-\rowcolor{lightgolden}\cellcolor{white}
-& \textbf{\methodname-14B} & \multirow{-2}{*}{GSPO} & \textbf{68.57} & \underline{71.00} & 68.69 & \textbf{50.88} & \textbf{53.71} & \textbf{50.88} & \textbf{40.32} & \textbf{43.74} & 40.27 \\
+& \textbf{\methodname-4B}$^{\dagger}$ & \underline{68.52} & \textbf{71.53} & 67.74 & \underline{45.97} & \underline{49.70} & \underline{44.97} & \underline{36.78} & \underline{40.71} & 35.72 \\
+\multirow{-8}{*}{OpenHands-Bash} \rowcolor{lightgolden}\cellcolor{white}
+& \textbf{\methodname-14B}$^{\dagger}$ & \textbf{68.57} & \underline{71.00} & 68.69 & \textbf{50.88} & \textbf{53.71} & \textbf{50.88} & \textbf{40.32} & \textbf{43.74} & 40.27 \\
 \bottomrule
 \end{tabular}%
 }
 \label{tab:swe_bench_results}
 \end{table*}
+
+% \begin{table*}[!ht]
+% \caption{SWE-Bench Verified Results. \methodname achieves state-of-the-art performance among open-source models, bridging the gap with proprietary models like Claude 3.7.}
+% \centering
+% \renewcommand{\arraystretch}{1.25}
+% \setlength{\tabcolsep}{3.5pt}
+% \resizebox{\textwidth}{!}{%
+% \begin{tabular}{c|c|c|ccc|ccc|ccc}
+% \toprule
+% \multirow{2}{*}{\textbf{Scaffold}} & \multirow{2}{*}{\textbf{LLM}} & \multirow{2}{*}{\textbf{Algo.}} & \multicolumn{3}{c|}{\textbf{File-level}} & \multicolumn{3}{c|}{\textbf{Module-level}} & \multicolumn{3}{c}{\textbf{Function-level}} \\
+% % No \cmidrule here to ensure vertical lines are continuous
+% & & & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. & \textbf{F1} & Prec. & Rec. \\
+% \midrule
+
+% % --- Closed Source Section ---
+% \rowcolor{headergray}
+% \multicolumn{12}{c}{\textbf{Closed-Source LLMs}} \\
+% \midrule
+% RepoSearcher & Claude-3.7-Sonnet & - & 32.30 & 20.24 & \textbf{89.24} & - & - & - & 26.91 & 18.64 & \textbf{66.08} \\
+% \midrule
+% \multirow{3}{*}{RepoNavigator} & GPT-5-Chat & - & 58.88 & 61.87 & 58.17 & - & - & - & 31.17 & 34.56 & 30.42 \\
+% & Claude-3.7-Sonnet & - & 73.01 & 75.95 & 72.26 & - & - & - & 31.72 & 34.43 & 31.03 \\
+% & Claude-4.5-Sonnet & - & 79.94 & 81.92 & 80.68 & - & - & - & 43.62 & 45.76 &43.97 \\
+% \multirow{2}{*}{OpenHands} & GPT-5 & - & 3.20 & 3.20 & 3.20 & 2.60 & 2.60 & 2.60 & 2.60 & 2.60 & 2.60 \\
+% & Claude-4.5-Sonnet & - & 0.80 & 0.80 & 0.80 & 0.40 & 0.40 & 0.40 & 0.40 & 0.40 & 0.40\\
+% \multirow{2}{*}{OpenHands+reminder} & GPT-5 & - & 78.18 & 79.25 & 80.80 & 61.17 & 62.23 & 63.35 & 54.79 & 56.80 & 56.53 \\
+% & Claude-4.5-Sonnet & - & 82.01 & 84.50 & 82.86 & 67.19 & 70.11 & 67.47 & 61.78 & 65.42 & 61.99 \\
+% \midrule
+
+% % --- Open Source Section ---
+% \rowcolor{headerblue}
+% \multicolumn{12}{c}{\textbf{Open-Source LLMs}} \\
+% \midrule
+% Agentless &  & - & 35.38 & 25.60 & 78.93 & - & - & - & 27.33 & 24.07 & 40.97 \\
+% CoSIL & & - & 30.77 & 19.34 & \underline{83.50} & - & - & - & 22.11 & 14.85 & 55.38 \\
+% LocAgent & & - & 44.18 & 34.18 & 79.39 & - & - & - & 21.48 & 16.29 & 46.79 \\
+% OrcaLoca &\multirow{-4}{*}{Qwen2.5-32B}  & - & 58.11 & 59.51 & 59.57 & - & - & - & 28.72 & 25.59 & 39.14 \\
+% \midrule
+
+% % FIXED: Used \shortstack to break lines cleanly inside the multirow
+% \multirow{2}{*}{RepoSearcher} & Qwen2.5-7B & \multirow{2}{*}{\shortstack{Distillation\\[2pt]+ GRPO}} & 30.09 & 18.80 & 83.11 & - & - & - & 25.57 & 17.68 & \underline{62.38} \\
+% & Qwen2.5-32B & & 32.25 & 20.24 & \textbf{88.59} & - & - & - & 28.03 & 19.36 & \textbf{68.55} \\
+% \midrule
+
+% \multirow{3}{*}{RepoNavigator} & Qwen2.5-7B & \multirow{3}{*}{GRPO} & 51.63 & 53.83 & 50.62 & - & - & - & 27.49 & 30.34 & 26.69 \\
+% & Qwen2.5-14B & & 58.90 & 58.97 & 61.60 & - & - & - & 29.23 & 30.08 & 31.02 \\
+% & Qwen2.5-32B & & 67.75 & 70.76 & 67.29 & - & - & - & 34.09 & 37.19 & 33.71 \\
+% \midrule
+% & Qwen3-1.7B & - & 2.40 & 2.09 & 3.60 & 0.37 & 0.32 & 0.60 & 0.34 & 0.32 & 0.50 \\
+% & Qwen3-4B-Instruct & - & 49.73 & 49.69 & 53.34 & 19.32 & 19.86 & 20.15 & 13.27 & 14.17 & 13.74 \\
+% & Qwen3-14B & - & 43.13 & 36.49 & 71.20 & 22.86 & 20.40 & 33.04 & 16.08 & 14.51 & 23.58 \\
+% & Qwen3-32B (Thinking) & - & 62.91 & 59.87 & 73.63 & 34.69 & 33.85 & 39.46 & 23.99 & 24.22 & 26.86 \\
+
+% % --- Method Rows ---
+% \rowcolor{lightgolden}\cellcolor{white}
+% & \textbf{\methodname-1.7B} & RFT & 46.60 & 48.60 & 45.82 & 29.79 & 31.60 & 29.13 & 23.04 & 25.30 & 22.32 \\
+
+% \rowcolor{lightgolden}\cellcolor{white}
+% & \textbf{\methodname-1.7B} & RFT + GSPO & 55.46 & 58.40 & 54.27 & 36.45 & 39.37 & 35.46 & 28.22 & 31.77 & 27.18 \\
+
+% \rowcolor{lightgolden}\cellcolor{white}
+% & \textbf{\methodname-4B} & & \underline{68.52} & \textbf{71.53} & 67.74 & \underline{45.97} & \underline{49.70} & \underline{44.97} & \underline{36.78} & \underline{40.71} & 35.72 \\
+
+% \multirow{-8}{*}{OpenHands} \rowcolor{lightgolden}\cellcolor{white}
+% & \textbf{\methodname-14B} & \multirow{-2}{*}{GSPO} & \textbf{68.57} & \underline{71.00} & 68.69 & \textbf{50.88} & \textbf{53.71} & \textbf{50.88} & \textbf{40.32} & \textbf{43.74} & 40.27 \\
+% \bottomrule
+% \end{tabular}%
+% }
+% \label{tab:swe_bench_results}
+% \end{table*}
 % \begin{table*}[t]
 % \caption{SWE-Bench Verified Results}
 % \centering
