@@ -1,0 +1,29 @@
+% Define helper commands for icons
+\newcommand{\cmark}{\textcolor{green!70!black}{\faCheck}}
+\newcommand{\xmark}{\textcolor{red!70!black}{\faTimes}}
+
+\begin{table}[t]
+\centering
+\caption{Comparison of repository-level localization and agentic methods along four axes. \methodname (ours) is the only method to use standard terminal tools and pure RL training without distillation.}
+\label{tab:baseline_comparison}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt} % Reduced spacing for single column
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & 
+\textbf{\begin{tabular}[c]{@{}c@{}}Lang-Indep. \\ Impl.\end{tabular}} & 
+\textbf{\begin{tabular}[c]{@{}c@{}}Pure RL \\ training  \end{tabular}} & 
+\textbf{\begin{tabular}[c]{@{}c@{}} Num. of \\ Tools \end{tabular}} & 
+\textbf{\begin{tabular}[c]{@{}c@{}}Std. SWE-Agent \\ Tools\end{tabular}} \\ 
+\midrule
+LocAgent             & \xmark & \xmark & 3 & \xmark \\
+CoSiL                & \xmark & \xmark & 3 & \xmark \\
+OrcaLoca             & \xmark & \xmark & 5 & \xmark \\
+RepoSearcher         & \xmark & \xmark & 5 & \xmark \\
+RepoNavigator        & \xmark & \cmark & 1 & \xmark \\
+\textbf{\methodname} & \cmark & \cmark & 1 & \cmark \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
