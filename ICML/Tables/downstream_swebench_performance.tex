@@ -1,0 +1,46 @@
+
+\begin{table}[h]
+\caption{Downstream performance on \textbf{SWE-Bench Verified}. \methodname localization improves resolution rates while reducing step counts and token usage.}
+\centering
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{ll|cccc}
+\toprule
+\textbf{LLM} & \makecell[l]{\textbf{Localization}\\\textbf{Approach}} & \makecell{\textbf{Resolution }\\\textbf{Rate $\uparrow$}} & \makecell{\textbf{Avg. }\\\textbf{\# Steps $\downarrow$}} & \makecell{\textbf{Avg. Input}\\\textbf{Tokens $\downarrow$}} & \makecell{\textbf{Avg. Output}\\\textbf{Tokens $\downarrow$}} \\
+\midrule
+\multirow{3}{*}{\textbf{\makecell[l]{Qwen3-4B-\\Instr.}}} & None (Vanilla) & 13.40\% & \underline{16.09} & 344.37K & \underline{2.98K} \\
+& \methodname-14B & \underline{17.20\%} & \textbf{13.91} & \textbf{284.26K} & \textbf{2.78K} \\
+& Oracle & \textbf{19.60\%} & 16.41 & \underline{327.75K} & 3.17K \\
+\midrule
+\multirow{3}{*}{\textbf{\makecell[l]{Qwen3-Coder-\\30B-A3B-Instr.}}} & None (Vanilla) & 45.20\% & 51.00 & 1596.71K & 13.49K \\
+& \methodname-14B & \underline{46.00\%} & \underline{48.11} & \underline{1511.53K} & \underline{13.22K} \\
+& Oracle & \textbf{52.00\%} & \textbf{46.74} & \textbf{1358.60K} & \textbf{12.48K} \\
+\bottomrule
+\end{tabular}%
+}
+\label{tab:downstream_swe_bench}
+\end{table}
+% if two-column table preferred see below
+% \begin{table*}[h]
+% \caption{Downstream performance on \textbf{SWE-Bench Verified} using different localization methods. \methodname localization consistently improves issue resolution rates and reduces the average number of steps and token consumption compared to the vanilla baseline.}
+% \centering
+% \renewcommand{\arraystretch}{1.2}
+% \setlength{\tabcolsep}{6.0pt}
+% \resizebox{\textwidth}{!}{%
+% \begin{tabular}{ll|cccc}
+% \toprule
+% \textbf{LLM} & \textbf{Localization Approach} & \textbf{Resolution Rate $\uparrow$} & \textbf{Avg. \# Steps $\downarrow$} & \textbf{Avg. Input Tokens $\downarrow$} & \textbf{Avg. Output Tokens $\downarrow$} \\
+% \midrule
+% \multirow{3}{*}{\textbf{Qwen3-4B-Instruct-2507}} & None (Vanilla Setup) & 13.40\% & \underline{16.09} & 344.37K & \underline{2.98K} \\
+% & \methodname-14B & \underline{17.20\%} & \textbf{13.91} & \textbf{284.26K} & \textbf{2.78K} \\
+% & Oracle (using gold patch) & \textbf{19.60\%} & 16.41 & \underline{327.75K} & 3.17K \\
+% \midrule
+% \multirow{3}{*}{\textbf{Qwen3-Coder-30B-A3B-Instruct}} & None (Vanilla Setup) & 45.20\% & 51.00 & 1596.71K & 13.49K \\
+%  & \methodname-14B & \underline{46.00\%} & \underline{48.11} & \underline{1511.53K} & \underline{13.22K} \\
+% & Oracle (using gold patch) & \textbf{52.00\%} & \textbf{46.74} & \textbf{1358.60K} & \textbf{12.48K} \\
+% \bottomrule
+% \end{tabular}%
+% }
+% \label{tab:downstream_swe_bench}
+% \end{table*}

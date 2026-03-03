@@ -1,17 +1,18 @@
 \section{Analysis}
-This section presents a fine-grained analysis to better understand the \methodname recipe for code localization. We first demonstrate the advantages of effective localization on downstream issue resolution in \S\ref{sec:downstream_swebench}. Next, we analyze the evolution of tool-use behavior during RL training in \S\ref{sec:tool_use_behaviour}. Finally, we report findings from a comprehensive ablation study examining the effect of different RL algorithms on localization performance in \S\ref{sec:rl_ablation_study}. 
+This section presents comprehensive analysis that offers more insights about the \methodname recipe. We discuss the advantages of effective localization on downstream issue resolution (\S\ref{sec:downstream_swebench}), analyze the evolving tool-use behaviors during RL (\S\ref{sec:tool_use_behaviour}), and describe the effect of various RL algorithms on localization performance (\S\ref{sec:rl_ablation_study}).
 \subsection{Does Effective Code Localization Improve Issue Resolution?}\label{sec:downstream_swebench}
+\input{ICML/Tables/downstream_swebench_performance}
+We demonstrate that augmenting issue-resolution agents with code localized by \methodname improves both downstream performance and efficiency on SWE-Bench Verified when using the OpenHands Software Agent SDK~\citep{wang2025openhandssoftwareagentsdk}. We consider three settings: (1) a vanilla baseline without any localization, (2) augmenting the agent with locations retrieved by \methodname-14B, and (3) augmenting the agent with oracle locations parsed from the gold patch (\S\ref{sec:data_creation}). For settings (2) and (3), we modify the user prompt by including the names of localized files, modules, and functions (see Appendix~\ref{appendix:prompts_swe_bench}).
 
+We perform experiments using two LLMs: Qwen3-4B-Instruct-2507 and Qwen3-Coder-30B-A3B-Instruct, both using a 132K context window, a maximum of 100 turns, and recommended decoding hyperparameters from Qwen3 developers. We compare these three approaches based on performance, using issue resolution rate (\% of issues successfully fixed), and efficiency, using instance-level averages of number of steps per trajectory, and total input and output tokens accumulated over all turns.
 
-\subsection{Which Unix commands does the LLM use?}\label{sec:tool_use_behaviour}
-\subsection{How does choice of RL algorithm impact downstream performance?}\label{sec:rl_ablation_study}
+We report experimental results in Table \ref{tab:downstream_swe_bench}. For Qwen3-4B-Instruct-2507, improved localization quality leads to substantial gains in both performance and efficiency: augmenting the agent with locations retrieved by \methodname-14B increases the resolution rate by \textbf{3.80\%}, while reducing the average number of steps by \textbf{2.18} and input and output tokens by \textbf{17.46\%} and \textbf{6.71\%}, respectively. Similar trends are observed for Qwen3-Coder-30B-A3B-Instruct, where augmentation with \methodname-14B yields notable efficiency gains with \textbf{2.89} fewer steps on average and reductions of \textbf{5.33\%} and 2.00\% in input and output tokens, while achieving a slightly higher or competitive resolution rate (+0.80\%). For both models, replacing \methodname localization with oracle locations results in a further performance boost (\textbf{+6.00\%} for 30B and \textbf{+2.40\%} for 4B). The 30B model additionally benefits from improved efficiency, with \textbf{1.37} fewer steps and reductions of \textbf{10.12\%} and \textbf{5.60\%} in input and output tokens. Overall, these results indicate that continued improvements in code localization will likely further enhance both the performance and efficiency of issue resolution agents.
+
+\subsection{How does the tool-use behaviour of \methodname evolve during RL?}\label{sec:tool_use_behaviour}
 % \lscomment{Steps, or tool use, how does this change through out the training run, or the inference behaviour, does it use more or less greps compared to other actions before it settles for a final answer.}
-
+\input{ICML/Figures/heatmap_4B}
 In \autoref{fig:tool_use}, we observe that at the start of training, \methodname tries out multiple different bash commands such as \texttt{cat}, \texttt{grep}, etc. However, as training progresses, the agent quickly converges to using less command variations and after 250 steps only uses \texttt{rg} and \texttt{sed}. This is most likely due to the \texttt{rg} command being comprehensive enough as functionalities from \texttt{cat}, \texttt{find}, and \texttt{grep} can be done with \texttt{rg}. \texttt{cd} aslo sees dimishing use likely due to the the more effective use of \texttt{rg} that makes changing directory unnecessary.
 
-\begin{figure*}[h]
-    \centering
-    \includegraphics[width=0.6\linewidth]{Figures/change.png}
-    \caption{Although it starts with using various commands, as training progresses, \methodname quickly learns to only utilize two particular bash commands; \texttt{rg} and \texttt{sed}. This may due to \texttt{rg} capable enough to functionally replace other commands.}
-    \label{fig:tool_use}
-\end{figure*}
+\subsection{How does choice of RL algorithm impact downstream performance?}\label{sec:rl_ablation_study}
+\input{ICML/Figures/heatmap_14B}
+\sonicomment{TODO: Yuchen (Leon) has run some new experiments by trying different training algorithms with 4B model. It is an interesting ablation study to write.}

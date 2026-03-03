@@ -165,6 +165,8 @@ We find that \methodname is flexible in that it is not constrained by any specif
 
 Another popular approach to code localization configures the sub-agent to return $k$ number of candidate answers. A higher $k$ value has a higher recall or higher chance of returning highest number of relevant items but at the risk of also returning non-relevant ones. This poses a potential issue of distracting a SWE agent. On the other hand, reducing $k$ will alleviate this issue but at the cost of leaving out actually relevant items. In contrast, we do not configure \methodname with any $k$ and instead train it to with various cases where the correct set of items can be singular or multiple. This effectively strikes a balance between having to decide what $k$ value is appropriate.
 \section{Comparing closed-source LLMs across diverse agent scaffolds -- is a complex scaffold actually helpful?}\label{appendix:scaffold_api_discussion}
+\section{System and User Prompts for Downstream Issue 
+Resolution}\label{appendix:prompts_swe_bench}
 % \section{Performance}
 
 % \input{Tables/results_verified}
