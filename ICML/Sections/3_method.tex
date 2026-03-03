@@ -1,8 +1,6 @@
-\section{\methodname: An Effective RL Recipe for Code Search}
+\section{\methodname: An Effective RL Recipe for Code Localization}
 
 This section presents the methodology used to train \methodname, covering training data curation and environment construction (\S\ref{sec:data_creation}), the agent scaffold and tools (\S\ref{sec:agent_scaffold}), reward design (\S\ref{sec:reward_design}), and the overall RL training setup (\S\ref{sec:train_algo}).
-
-% We demonstrate an accessible method to produce a competitive code-search agent using open-source artifacts. We train a 14b and a 4b model with this method.
 
 \subsection{Data and Environment Curation}
 \label{sec:data_creation}
@@ -18,9 +16,9 @@ We construct the RL environment by cloning the pre-PR commit into a fixed path e
 
 \subsection{OpenHands-Bash: Our Agent Scaffold}\label{sec:agent_scaffold}
 
-We use the OpenHands Software Agent SDK~\cite{wang2025openhandssoftwareagentsdk} to implement the \methodname scaffold because it performs strongly across software engineering benchmarks, provides robust core tools (e.g., the terminal), supports parallel tool-calling, and offers a modular design that integrates cleanly with our training backend. 
+We use the OpenHands Software Agent SDK~\cite{wang2025openhandssoftwareagentsdk} to implement the \methodname scaffold because it performs strongly across software engineering benchmarks, implements core tools (e.g., the terminal), supports parallel tool-calling, and offers a modular design that easily integrates with our training backend. 
 
-The agent is primarily equipped with a \texttt{Terminal} tool that supports standard Unix commands (e.g., \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, \texttt{sed}). To accelerate grep-style code search, we install ripgrep~\footnote{\url{https://github.com/BurntSushi/ripgrep}} in the agent environment and explicitly prompt the agent to use it.\yccomment{In my experiments, omitting `ripgrep` can possibly lead to accumulated timeout errors in the async RL system, causing crashes at longer step limits; would it be worth mentioning this in the main text?} In addition, the agent uses a \texttt{LocalizationFinish} tool to submit predicted files, modules, and functions. We refer to this scaffold as \textbf{OpenHands-Bash}.
+The agent is primarily equipped with a \texttt{Terminal} tool that supports standard Unix commands (e.g., \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, \texttt{sed}). To accelerate grep-style code search, we install ripgrep~\footnote{\url{https://github.com/BurntSushi/ripgrep}} in the agent environment and explicitly prompt the agent to use it.\yccomment{In my experiments, omitting `ripgrep` can possibly lead to accumulated timeout errors in the async RL system, causing crashes at longer step limits; would it be worth mentioning this in the main text? --> soni: if we have a concrete run, sure} In addition, the agent uses a \texttt{LocalizationFinish} tool to submit predicted files, modules, and functions. We refer to this scaffold as \textbf{OpenHands-Bash}.
 
 In initial experiments, we used LocAgent's string-based output format~\citep{chen-etal-2025-locagent}, but found it to be sensitive to noisy reward signals due to brittle validation and parsing. We address this by requiring the agent to terminate via the \texttt{LocalizationFinish} tool, which enforces a structured output schema and enables precise parsing and validation, improving reward-signal fidelity. Appendix~\ref{appendix:prompts} provides the full system and user prompts for OpenHands-Bash.
 
@@ -44,14 +42,15 @@ We also explored auxiliary rewards to incentivize parallel tool-calling, motivat
 
 We implement our training backend using SkyRL~\cite{griggs2025skrylv01}, a modular framework for LLM reinforcement learning. SkyRL supports asynchronous training~\citep{fu2025areallargescaleasynchronousreinforcement}, improving GPU utilization by parallelizing rollout generation and weight optimization. Specifically, parameter updates are triggered after collecting a sufficient number of rollouts, allowing trajectories from slightly stale checkpoints. Concretely, trajectories used at the $n^{\text{th}}$ training step may come from checkpoints that are at most $t$ steps stale, where $t$ is the maximum staleness (set to 4 in our experiments). After each optimization step, we synchronize updated weights with the vLLM~\citep{kwon2023efficient} inference engines and terminate any in-progress inference requests.
 
-We train \methodname models using Group Sequence Policy Optimization (GSPO)~\citep{zheng2025groupsequencepolicyoptimization}. \sonicomment{TODO: define all symbols introduced below.} \yccomment{A quick version:} Here, $\theta$ denotes model parameters; $i$ indexes sequences in a group of size $G$; $y_i$ is the $i$-th output sequence with length $|y_i|$, and $y_{i,t}$ its $t$-th token. $\pi_\theta$ and $\pi_{\theta_{\text{old}}}$ are the current and previous policies, $\hat{A}_i$ is the advantage, and $\varepsilon$ is the clipping parameter. The loss is expressed as:
+We train \methodname models using Group Sequence Policy Optimization (GSPO)~\citep{zheng2025groupsequencepolicyoptimization}. \sonicomment{TODO: define all symbols introduced below.} \yccomment{A quick version:} Here, $\theta$ denotes model parameters; $i$ indexes sequences in a group of size $G$; $y_i$ is the $i^{th}$ output sequence with length $|y_i|$, and $y_{i,t}$ is its $t^{th}$ token. $\pi_\theta$ and $\pi_{\theta_{\text{old}}}$ are the current and previous policies, $\hat{A}_i$ is the advantage, and $\varepsilon$ is the clipping parameter. The loss is expressed as:
+{
+\small % or \footnotesize
 \begin{align}
-    \mathcal{J}_{\text{GSPO}}(\theta) &= \nonumber \\  \mathbb{E}_i &\left[ \frac{1}{G} \sum_{i=1}^{G} \min\left( s_i(\theta) \hat{A}_i,\, \text{clip}\left( s_i(\theta), \varepsilon \right) \hat{A}_i \right) \right]
-    % \\
-    % \nonumber \\
-    % \hat{A}_i &= r_i - \text{mean}(\mathbf{r}), \mathbf{r} = \{r_0, ..., r_N\}
-    % \label{eq:gspo}
+    \mathcal{J}_{\text{GSPO}}(\theta) &= \nonumber \\ 
+    \mathbb{E}_i &\left[ \frac{1}{G} \sum_{i=1}^{G} \min\left( s_i(\theta) \hat{A}_i,\, \text{clip}\left( s_i(\theta), 1-\varepsilon, 1+\varepsilon \right) \hat{A}_i \right) \right]
+    \label{eq:gspo}
 \end{align}
+}
 where $s_i$ is the importance ratio derived from sequence likelihood~\cite{zheng-etal-2023-click}:
 \begin{align}
     s_i(\theta) = \exp\left( \frac{1}{|y_i|} \sum_{t=1}^{|y_i|} \log \frac{\pi_\theta(y_{i,t} | x, y_{i,<t})}{\pi_{\theta_{\text{old}}}(y_{i,t} | x, y_{i,<t})} \right)
@@ -59,6 +58,8 @@ where $s_i$ is the importance ratio derived from sequence likelihood~\cite{zheng
 \end{align}
 Following DR. GRPO~\cite{liu2025understandingr1zeroliketrainingcritical}, we remove the KL regularization term from the loss and the standard deviation from the advantage calculation.
 \begin{align}
-    \hat{A}_i = r_i - \text{mean}(\mathbf{r}), \mathbf{r} = \{r_0, ..., r_N\}
+    \hat{A}_i = r_i - \text{mean}(\mathbf{r}), \mathbf{r} = \{r_1, ..., r_G\}
 \end{align}
-In preliminary experiments, GRPO~\cite{shao2024deepseekmathpushinglimitsmathematical} was prone to late-stage collapse, where tool-calling performance degraded and most rollouts received zero rewards. \sonicomment{Include more details: we mask loss for trajectories that exhaust max steps without calling the finish tool; we disable the KL penalty (cite DAPO); we disable entropy loss in optimization.}
+
+Note that we disable entropy loss during training and mask loss from trajectories that exhaust maximum steps without calling the finish tool. 
+% \sonicomment{Include more details: we mask loss for trajectories that exhaust max steps without calling the finish tool; we disable the KL penalty (cite DAPO); we disable entropy loss in optimization.}
