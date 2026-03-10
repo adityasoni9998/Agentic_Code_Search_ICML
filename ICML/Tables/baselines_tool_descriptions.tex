@@ -1,0 +1,37 @@
+\begin{table}[!t]
+\centering
+\caption{Comparison of tools used by prior code localization agents and \methodname. Existing approaches rely on specialized task-specific tools, while \methodname achieves competitive or superior performance using only a bash terminal typical of coding agents.}
+\label{tab:granular_tool_behaviours}
+\renewcommand{\arraystretch}{1.2}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lll}
+\toprule
+\textbf{Method} & \textbf{Tools} & \textbf{Tool Behaviour} \\
+\midrule
+\multirow{3}{*}{LocAgent~\citep{chen-etal-2025-locagent}} & \texttt{SearchEntity} & Performs keyword-based retrieval to identify relevant code entities. \\
+ & \texttt{TraverseGraph} & Traverse/parse codebase dependencies by navigating hops in the code graph. \\
+ & \texttt{RetrieveEntity} & Accesses the complete implementation for a specific entity ID. \\
+ \midrule
+\multirow{3}{*}{CoSIL~\citep{liu2025cosil}} & \texttt{search\_class\_node} & Retrieves the full code snippet of a class given its file path. \\
+ & \texttt{search\_class\_function\_node} & Extracts implementation details for a specific member function in a class. \\
+ & \texttt{search\_file\_function\_node} & Fetches the source code for standalone/static functions within a file. \\
+\midrule
+\multirow{5}{*}{OrcaLoca~\citep{yu2025orcalocallmagentframework}} & \texttt{search\_file\_contents} & Returns file contents or a structural skeleton for long files ($>$200 lines). \\
+ & \texttt{search\_class} & Locates and returns class definitions or their structural skeletons. \\
+ & \texttt{search\_method\_in\_class} & Extracts specific method implementations from within a designated class. \\
+ & \texttt{search\_callable} & Identifies and returns code snippets for callable objects (functions/methods). \\
+ & \texttt{search\_source\_code} & Performs a general search to match source code strings to snippets. \\
+\midrule
+\multirow{5}{*}{RepoSearcher~\citep{ma2025toolintegratedreinforcementlearningrepo}} & \texttt{GetRepoStructure} & Provides an overview of the repository’s file and directory hierarchy. \\
+ & \texttt{GetImportOfFile} & Identifies and lists all imports for a given file. \\
+ & \texttt{SearchClass} & Fetches the raw code content of a specific class definition. \\
+ & \texttt{SearchFunction} & Fetches the raw code content of a standalone function definition. \\
+ & \texttt{SearchClassMethod} & Specifically targets and retrieves implementations of class-specific methods. \\
+\midrule
+RepoNavigator~\citep{zhang2025one} & \texttt{jump} & Navigates directly to a symbol's definition using a language server. \\
+\midrule
+\rowcolor{lightgolden}\textbf{\methodname \textit{(Ours)}} & \texttt{terminal} & Executes standard Unix commands in a persistent, stateful \texttt{tmux} session \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

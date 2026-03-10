@@ -1,0 +1,37 @@
+\begin{figure}[htbp]
+     \centering
+     % First Row
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{ICML/Figures/codescout_1.7b/codescout_1.7b_avg_reward.png}
+         \caption{Aggregate reward vs. Training Step}
+         \label{fig:codescout_1.7b_avg}
+     \end{subfigure}
+     % \hfill
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{ICML/Figures/codescout_1.7b/codescout_1.7b_file_reward.png}
+         \caption{File-level F1 score vs. Training Step}
+         \label{fig:codescout_1.7b_file}
+     \end{subfigure}
+
+     % \vspace{10pt} % Adds vertical space between the rows
+
+     % Second Row
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{ICML/Figures/codescout_1.7b/codescout_1.7b_module_reward.png}
+         \caption{Module-level F1 score vs. Training Step}
+         \label{fig:codescout_1.7b_module}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.48\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{ICML/Figures/codescout_1.7b/codescout_1.7b_function_reward.png}
+         \caption{Function-level F1 score vs. Training Step}
+         \label{fig:codescout_1.7b_function}
+     \end{subfigure}
+     
+     \caption{Reward curves for RL training of \methodname-1.7B.}
+     \label{fig:codescout_1.7b_reward}
+\end{figure}

@@ -1,0 +1,68 @@
+\begin{table}[!t]
+\centering
+\caption{Comparison of Different RL algorithms based on Localization Performance on SWE-Bench-Pro. $^*$: note that \methodname-4B is trained with Vanilla-GSPO configuration but with a maximum of 6 steps per rollout.}
+\label{tab:results}
+\renewcommand{\arraystretch}{1.4}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llccc}
+\toprule
+\textbf{Training Algorithm} & \textbf{Hyperparameter changes (others default to those in Vanilla-GSPO)} & \textbf{File F1} & \textbf{Module F1} & \textbf{Function F1} \\
+\midrule
+\multirow{2}{*}{Vanilla-GSPO}
+  & \texttt{advantage\_estimator=grpo;\ policy\_loss\_type=gspo; loss\_reduction=}
+  & \multirow{2}{*}{\textbf{54.83\%}} & \multirow{2}{*}{31.43\%} & \multirow{2}{*}{23.29\%} \\
+  & \texttt{sequence\_mean; eps\_clip\_low/high=3e-4/4e-4;\ grpo\_norm\_by\_std=false} & & & \\
+\midrule
+\multirow{2}{*}{SAPO (norm-by-std, $\epsilon$\texttt{=0.2})}
+  & \texttt{policy\_loss\_type=sapo;\ eps\_clip\_low/high=0.2/0.2}
+  & \multirow{2}{*}{49.05\%} & \multirow{2}{*}{29.82\%} & \multirow{2}{*}{22.00\%} \\
+  & \texttt{grpo\_norm\_by\_std=true;\ loss\_reduction=sequence\_mean} & & & \\
+\midrule
+\multirow{2}{*}{Dr.GRPO (regular + SeqMeanTokenSum, no-std)}
+  & \texttt{policy\_loss\_type=regular;\ loss\_reduction=seq\_mean\_token\_sum\_norm}
+  & \multirow{2}{*}{52.42\%} & \multirow{2}{*}{33.58\%} & \multirow{2}{*}{25.13\%} \\
+  & \texttt{eps\_clip\_low/high=0.2/0.2;\ grpo\_norm\_by\_std=false} & & & \\
+\midrule
+\multirow{2}{*}{GRPO + SqrtLenNorm}
+  & \texttt{advantage\_estimator=grpo\_length\_norm\_sqrt}
+  & \multirow{2}{*}{49.93\%} & \multirow{2}{*}{26.05\%} & \multirow{2}{*}{17.65\%} \\
+  & \texttt{loss\_reduction=seq\_mean\_token\_sum\_norm} & & & \\
+\midrule
+\multirow{2}{*}{SAPO + SqrtLenNorm}
+  & \texttt{advantage\_estimator=grpo\_length\_norm\_sqrt;\ policy\_loss\_type=sapo}
+  & \multirow{2}{*}{50.95\%} & \multirow{2}{*}{26.08\%} & \multirow{2}{*}{18.87\%} \\
+  & \texttt{loss\_reduction=seq\_mean\_token\_sum\_norm} & & & \\
+\midrule
+\multirow{2}{*}{GRPO + SqrtLenNorm + $\epsilon$\texttt{=0.2}}
+  & \texttt{advantage\_estimator=grpo\_length\_norm\_sqrt;\ loss\_reduction=}
+  & \multirow{2}{*}{52.89\%} & \multirow{2}{*}{27.58\%} & \multirow{2}{*}{18.96\%} \\
+  & \texttt{seq\_mean\_token\_sum\_norm;\ eps\_clip\_low/high=0.2/0.2} & & & \\
+\midrule
+\multirow{2}{*}{Dr.GRPO + GSPO (SeqMeanTokenSum)}
+  & \texttt{policy\_loss\_type=gspo}
+  & \multirow{2}{*}{42.02\%} & \multirow{2}{*}{24.88\%} & \multirow{2}{*}{18.53\%} \\
+  & \texttt{loss\_reduction=seq\_mean\_token\_sum\_norm} & & & \\
+\midrule
+\multirow{2}{*}{Dr.GRPO + SAPO (SeqMeanTokenSum)}
+  & \texttt{policy\_loss\_type=sapo}
+  & \multirow{2}{*}{52.10\%} & \multirow{2}{*}{33.29\%} & \multirow{2}{*}{23.29\%} \\
+  & \texttt{loss\_reduction=seq\_mean\_token\_sum\_norm} & & & \\
+\midrule
+\multirow{2}{*}{GRPO + norm-by-std}
+  & \texttt{grpo\_norm\_by\_std=true}
+  & \multirow{2}{*}{52.73\%} & \multirow{2}{*}{34.37\%} & \multirow{2}{*}{26.41\%} \\
+  & (other settings same as vanilla GRPO variant) & & & \\
+\midrule
+\multirow{2}{*}{Vanilla GRPO (regular + norm-by-std, $\epsilon$\texttt{=0.2})}
+  & \texttt{policy\_loss\_type=regular;\ grpo\_norm\_by\_std=true}
+  & \multirow{2}{*}{47.59\%} & \multirow{2}{*}{30.89\%} & \multirow{2}{*}{22.20\%} \\
+  & \texttt{eps\_clip\_low/high=0.2/0.2;\ loss\_reduction=sequence\_mean} & & & \\
+\midrule
+\methodname-4B (Ours)$^*$
+  & Same as Vanilla-GSPO, but allows a maximum of 6 turns per rollout.
+  & 51.77\% & \textbf{36.97\%} & \textbf{29.03\%}\\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

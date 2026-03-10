@@ -2,10 +2,10 @@
 
 
 % Recent advances in large language models have enabled rapid progress on repository-level software engineering tasks, such as resolving real-world GitHub issues in large codebases~\citep{jimenez2024swebenchlanguagemodelsresolve}.
-
-On repository-level coding tasks such as those in the popular SWE-Bench benchmark \citep{jimenez2024swebenchlanguagemodelsresolve}, a critical first step is \textbf{code localization}: given an issue description and a repository, the system must identify the relevant files and finer-grained code entities (e.g., classes and functions) to modify~(\S\ref{sec:background}; \citet{husain2019codesearchnet,xia2024agentless}).
-This is challenging in large repositories with complex inter-dependencies, and relying on general-purpose language models to solve this localization problem as part of the agentic coding loop can result in high costs, incorrect fixes, and code bloat~\citep{hong2025context}.
 \input{ICML/Figures/main_figure}
+For repository-level coding tasks such as those in the popular SWE-Bench benchmark \citep{jimenez2024swebenchlanguagemodelsresolve}, a critical first step is \textbf{code localization}: given an issue description and a repository, the system must identify the relevant files and finer-grained code entities (e.g., classes and functions) to modify~(\S\ref{sec:background}; \citet{husain2019codesearchnet,xia2024agentless}).
+This is challenging in large repositories with complex inter-dependencies, and relying on general-purpose language models to solve this localization problem as part of the agentic coding loop can result in high costs, incorrect fixes, and code bloat~\citep{hong2025context}.
+
 To address this issue, it is also common to incorporate some variety of specialized localization module to acquire the relevant context from large codebases in a more efficient and effective manner.
 Traditionally, this code search was performed through semantic code search using vector databases \citep{xia2024agentless,wang2025coderag,xie2025swe}.
 
