@@ -204,15 +204,17 @@ We find that \methodname is flexible in that it is not constrained by any specif
 Another popular approach to code localization configures the sub-agent to return $k$ number of candidate answers. A higher $k$ value has a higher recall or higher chance of returning highest number of relevant items but at the risk of also returning non-relevant ones. This poses a potential issue of distracting a SWE agent. On the other hand, reducing $k$ will alleviate this issue but at the cost of leaving out actually relevant items. In contrast, we do not configure \methodname with any $k$ and instead train it to with various cases where the correct set of items can be singular or multiple. This effectively strikes a balance between having to decide what $k$ value is appropriate.
 
 % \section{Tool Definitions for OpenHands-Bash}
+\section{More details about related work}
+\input{ICML/Sections/7_related_work}
 
-\section{Example trajectories}
+
+\section{Example Trajectories sampled from \methodname-4B and \methodname-14B}\label{appendix:traj_examples}
 
 
 \section{Limitations and Directions for Future Work}
 
 
 
-\section{More details about related work}
 
 \input{ICML/Tables/baselines_tool_descriptions}
 
@@ -234,7 +236,7 @@ This section presents the RL reward curves and SFT loss curves from the training
 
 In \S\ref{sec:train_algo}, we described our choice of RL algorithm (GSPO) with modifications like no advantage standardization. A natural question is whether this particular configuration is optimal, or whether better performance can be achieved through other RL algorithms. We investigate this by training \texttt{Qwen3-4B-Instruct-2507} under a range of algorithm configurations, all sharing the same reward function which augments the reward from Equation~\ref{eqn:reward} with the auxiliary binary term $r^{\mathsf{turn}}$.
 
-\emph{Comparability note.} These ablation runs share the same learning rate, batch size, and number of rollouts as \methodname-4B (\S\ref{sec:train_setup}), but use 4 turns (vs.\ 6) in its system prompt and the auxiliary turn reward $r^{\mathsf{turn, k}}$ with $k$ equals 4. All ablation runs are trained for 200 steps; and small performance differences may fall within the range of training variance. We compare all the checkpoints by evaluating them on SWE-Bench Pro using the setup from \S\ref{sec:eval_benchmarks}.
+\emph{Comparability note.} These ablation runs share the same learning rate, batch size, and number of rollouts as \methodname-4B (\S\ref{sec:train_setup}), but use 4 turns (vs.\ 6) in its system prompt and the auxiliary turn reward $r^{\mathsf{turn}}(\tau, k)$ with $k$ = 4. All ablation runs are trained for 200 steps; and small performance differences may fall within the range of training variance. We compare all the checkpoints by evaluating them on SWE-Bench Pro using the setup from \S\ref{sec:eval_benchmarks}.
 
 \paragraph{Recipe-level comparison.}
 We first compare four representative critic-free policy-gradient recipes. These methods avoid the memory overhead of a separate value network, making them practical for multi-turn agentic training with long trajectories. They differ primarily in the \emph{policy loss type} (how the importance ratio is computed and constrained) and the \emph{loss reduction} (how per-token losses are aggregated):

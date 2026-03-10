@@ -1,19 +1,8 @@
-\section{Related Work}
+% \section{Related Work}
+\subsection{Prior approaches for code localization}
+Several prior methods have developed methods targeting code localization for downstream issue resolution in repositories. \citet{jimenez2024swebenchlanguagemodelsresolve} identify relevant source code files using BM25 retrieval~\citep{article} treating the issue description as the query and the Python source code files as documents. SWE-Fixer~\citep{xie2025swefixertrainingopensourcellms} use a two-step coarse-to-fine localization approach where they first retrieve relevant source code files using BM25 retrieval and then prompt a fine-tuned 7B model with the skeleton of the retrieved files to predict the names of relevant files for issue resolution. On the other hand, Agentless~\citep{xia2024agentless} uses a complex, multi-step localization pipeline wherein it first retrieves suspicious code files from the repository using both embedding-based retrieval and by prompting an LLM with the high-level repository structure, followed by prompting an LLM to predict relevant functions and classes given the skeletons of the suspicious files. 
 
-% \lscomment{Subagents, Multiagents, Recursive Agents}
-
-% \lscomment{Approaches to Solving SWE Tasks}
-
-% \yccomment{Would you mind adding a few references here?
-% I wasn’t entirely sure what specific lines of work you had in mind for these two topics.}
-
-
-% \lscomment{Code Localization, discuss few of them as contemporary works if needed but fine eitherway}
-
-% \yccomment{a draft:}
-
-\subsection{Code localization for software engineering}
-% Code localization---identifying files and finer-grained code entities requiring modification---is fundamental to automated software engineering. In SWE-bench, baseline localization methods rely on information retrieval and ranking methods such as BM25-based retrieval and semantic similarity~\citep{jimenez2024swebenchlanguagemodelsresolve}, but often struggle to capture structural dependencies in large repositories.
+Many recent approaches have increasingly shifted towards developing models and systems for code localization using agentic scaffolds. LocAgent~\citep{chen-etal-2025-locagent} and RepoGraph~\citep{ouyang2025repographenhancingaisoftware} utilize a graph-based indexing approach wherein all dependencies in the code repository (for e.g. import, invoke, inherit, etc.) are captured in a code graph and also develop specialized tools allowing the agent to search and traverse the graph. Furthermore, \citet{chen-etal-2025-locagent} train 7B model for their scaffold using rejection sampling fine-tuning on successful trajectories sampled from Claude-3.5-Sonnet. On the other hand, CoSIL~\citep{liu2025cosil} leverages module-call and function-call graphs 
 
 Recent LLM-based systems increasingly treat localization as an agentic process. Fixed-pipeline systems such as Agentless~\citep{xia2024agentless} separate localization from editing. Graph- and structure-aware methods, including LocAgent~\citep{chen-etal-2025-locagent}, CoSIL~\citep{liu2025cosil}, and RepoGraph~\citep{ouyang2025repographenhancingaisoftware}, introduce explicit repository structure to guide search. Other work explores tool-augmented or agent-based localization strategies, including priority scheduling and context pruning (e.g., OrcaLoca~\citep{yu2025orcalocallmagentframework}), as well as end-to-end RL training for repository-level agents such as RepoNavigator~\citep{zhang2025one}.
 
