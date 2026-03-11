@@ -8,26 +8,26 @@ This section presents the methodology used to train \methodname, covering traini
 We describe our approach to curating data and constructing RL environments for training \methodname.
 
 Given a GitHub issue $\mathcal{I}$ in a Python code repository $\mathcal{R}$, we process the ground-truth patch $\mathcal{P}$ that fixes the issue to extract the ground-truth localization target $y^{*}$ at three levels of granularity: files, modules, and functions. The LLM agent is tasked with predicting $y^{*}$ given the issue description and the pre-PR repository state. 
-We build on LocAgent's patch-processing scripts~\citep{chen-etal-2025-locagent} and extend them to (i) detect additions of member functions and class attributes at the module and file levels, (ii) capture modifications to import statements and global variables at the file level, and (iii) ignore docstring-only edits within functions and classes.\sonicomment{Can we just mention we adapt LocAgent logic and push (non-interesting) details to appendix?}\yccomment{Maybe keep one-sentence summary here and move the three bullet details to appendix for readability; add a pointer to the appendix.}
+We build on patch-processing scripts from LocAgent~\citep{chen-etal-2025-locagent} and extend them to (i) detect additions of member functions and class attributes at the module and file levels, (ii) capture modifications to import statements and global variables at the file level, and (iii) ignore edits to docstrings within functions and classes.
+% \sonicomment{Can we just mention we adapt LocAgent logic and push (non-interesting) details to appendix?}\yccomment{Maybe keep one-sentence summary here and move the three bullet details to appendix for readability; add a pointer to the appendix.}\sonicomment{let us just keep it here for now}
 
-We curate training instances by processing GitHub issues collected by prior work~\citep{yang2025swesmithscalingdatasoftware, pan2025trainingsoftwareengineeringagents}, which were originally intended for training agents to fix issues. We discard issues whose PRs create or delete files, since the agent cannot predict filenames for newly created files and we cannot determine ground-truth modules or functions for deleted files. We also ignore non-Python files (e.g., \texttt{README.md}) in the ground truth because function- and module-level information cannot be extracted from them. Finally, we remove instances with empty issue descriptions.
+We curate training instances by processing GitHub issues collected by prior work~\citep{yang2025swesmithscalingdatasoftware, pan2025trainingsoftwareengineeringagents}, which were originally intended for training agents to fix issues. We discard issues whose PRs create or delete files, as the agent cannot predict the name of newly created files and we cannot determine ground-truth modules or functions for deleted files. We also ignore non-Python files (e.g., \texttt{README.md}) in the ground truth because function- and module-level information cannot be extracted from them. We also discard instances with empty issue descriptions.
 
-We construct the RL environment by cloning the pre-PR commit into a fixed path exposed to the agent via its prompt. Because the localization task does not require executing repository code, we do not install project dependencies or use sandboxing/containerization. Notably, because our agent scaffold only requires a bash terminal, environment setup overhead is \emph{significantly} lower than scaffolds from prior work whose tools require code graphs, vector databases, or dependency parsers.
+We construct the RL environment by cloning the pre-PR commit of the repository to a specific location known to the agent via its prompt. Since the localization task does not require executing repository code, we do not install project dependencies or use sandboxing/containerization. Notably, since our agent scaffold only requires a bash terminal, environment setup overhead is \emph{significantly} lower than scaffolds from prior work whose tools require code graphs, vector databases, or dependency parsers.
 
 \subsection{OpenHands-Bash: Our Agent Scaffold}\label{sec:agent_scaffold}
 
-We use the OpenHands Software Agent SDK~\cite{wang2025openhandssoftwareagentsdk} to implement the \methodname scaffold because it performs strongly across software engineering benchmarks, implements core tools (e.g., the terminal), supports parallel tool-calling, and offers a modular design that easily integrates with our training backend. 
+We use the OpenHands Software Agent SDK~\cite{wang2025openhandssoftwareagentsdk} to implement our scaffold because it performs strongly across software engineering benchmarks, implements core tools (e.g., terminal), supports parallel tool-calling, and offers a modular design that easily integrates with our training backend. 
 
 The agent is primarily equipped with a \texttt{Terminal} tool that supports standard Unix commands (e.g., \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, \texttt{sed}). To accelerate grep-style code search, we install ripgrep~\footnote{\url{https://github.com/BurntSushi/ripgrep}} in the agent environment and explicitly prompt the agent to use it. In addition, the agent uses a \texttt{LocalizationFinish} tool to submit predicted files, modules, and functions. We refer to this scaffold as \textbf{OpenHands-Bash}.
 
 % \yccomment{In my experiments, omitting `ripgrep` can possibly lead to accumulated timeout errors in the async RL system, causing crashes at longer step limits; would it be worth mentioning this in the main text? -- soni: feel free to point to appendix if you have a concrete run -- yc: I'll check if my logs can support as evidences...} 
 
-Our initial experiments used a string-based output format like \citet{chen-etal-2025-locagent}, but found it to be sensitive to noisy reward signals due to brittle validation and parsing. We address this by requiring the agent to terminate via the \texttt{LocalizationFinish} tool, which enforces a structured output schema and enables precise parsing and validation, improving reward-signal fidelity. Appendix~\ref{appendix:prompts} provides the prompts and tool definitions for OpenHands-Bash.
+Our initial experiments used a string-based output format from \citet{chen-etal-2025-locagent}, but we found it to be sensitive to noisy reward signals due to brittle format validation and parsing. We address this by requiring the agent to terminate via the \texttt{LocalizationFinish} tool that enforces a structured output schema and simplifies parsing and validation, improving reward-signal fidelity. Appendix~\ref{appendix:prompts} includes detailed prompts and tool definitions for our agent.
 
 \subsection{Reward Design}\label{sec:reward_design}
 
 For each multi-turn trajectory $\tau$ sampled from the LLM agent, we extract the predicted localization output $y$ from the \texttt{LocalizationFinish} tool, which specifies predicted files, modules, and functions. Given the ground-truth localization target $y^{\star}$, we compute F1 scores between $y$ and $y^{\star}$ at three granularities, file, module, and function, denoted by $r^{\mathsf{F1-file}}$, $r^{\mathsf{F1-module}}$, and $r^{\mathsf{F1-func}}$, respectively. We define the reward as the sum of these three components:
-
 \begin{equation}
 \begin{aligned}
     r(\tau, y, y^{\star}) &= r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) \\
@@ -35,16 +35,15 @@ For each multi-turn trajectory $\tau$ sampled from the LLM agent, we extract the
 \end{aligned}
 \label{eqn:reward}
 \end{equation}
+In early experiments for \methodname-14B, we observed training collapse characterized by near-zero rewards in later stages. Our analysis indicated that the agent frequently exhausted the step budget without submitting predictions. To mitigate this issue, we use an auxiliary binary reward $r^{\mathsf{turn}}(\tau, k)$ that assigns 1 if and only if the agent terminates in exactly $k$ turns, where $k$ is the step limit. This simple mechanism encourages timely termination within the step limit. Accordingly, the final reward for \methodname-14B adds this binary term to $r(\tau, y, y^{\star})$ in Equation~\ref{eqn:reward}.
 
-In early experiments with \methodname-14B, we observed training collapse, characterized by near-zero rewards in later stages. Our analysis indicated that the agent frequently exhausted the step budget without submitting predictions. To mitigate this issue, we add an auxiliary binary reward $r^{\mathsf{turn}}(\tau, k)$ that assigns 1 if and only if the agent terminates in exactly $k$ turns, where $k$ is the step limit. This simple mechanism encourages timely termination and yields consistent predictions within the allotted step limit. Accordingly, the final reward for \methodname-14B adds this binary term to $r(\tau, y, y^{\star})$ in Equation~\ref{eqn:reward}.
-
-We also explored auxiliary rewards to incentivize parallel tool-calling, motivated by SWE-grep~\citep{cognition2025swegrep}, but found these interventions hurt overall performance. Thus, we instead explicitly prompt the agent to use parallel tool-calling (Appendix~\ref{appendix:prompts}).
+We also explored auxiliary rewards to incentivize parallel tool-calling, motivated by SWE-grep~\citep{cognition2025swegrep}, but found these interventions to hurt overall performance. Thus, we instead explicitly prompt the agent to use parallel tool-calling (Appendix~\ref{appendix:prompts}).
 
 \subsection{RL Training Algorithm}\label{sec:train_algo}
 
-We implement our training backend using SkyRL~\cite{griggs2025skrylv01}, a modular framework for LLM reinforcement learning. SkyRL supports asynchronous training~\citep{fu2025areallargescaleasynchronousreinforcement}, improving GPU utilization by parallelizing rollout generation and weight optimization. Specifically, parameter updates are triggered after collecting a sufficient number of rollouts, allowing trajectories from slightly stale checkpoints. Concretely, trajectories used at the $n^{\text{th}}$ training step may come from checkpoints that are at most $t$ steps stale, where $t$ is the maximum staleness (set to 4 in our experiments). After each optimization step, we synchronize updated weights with the vLLM~\citep{kwon2023efficient} inference engines and terminate any in-progress inference requests.
+We implement our training backend using SkyRL~\cite{griggs2025skrylv01}, a modular framework for LLM reinforcement learning. SkyRL supports asynchronous training~\citep{fu2025areallargescaleasynchronousreinforcement}, improving GPU utilization by parallelizing rollout generation and weight optimization. Specifically, parameter updates are triggered after collecting a sufficient number of rollouts, allowing trajectories from slightly stale checkpoints. Concretely, trajectories used at the $n^{\text{th}}$ training step may be sampled from checkpoints that are atmost $t$ steps stale, where $t$ is the maximum staleness (set to 4 in our experiments). After each optimization step, we synchronize updated weights with the vLLM~\citep{kwon2023efficient} engines and terminate any in-progress inference requests.
 
-We train \methodname models using Group Sequence Policy Optimization (GSPO)~\citep{zheng2025groupsequencepolicyoptimization}. \sonicomment{TODO: define all symbols introduced below.} \yccomment{A quick draft:} Here, $\theta$ denotes model parameters; $i$ indexes sequences in a group of size $G$; $y_i$ is the $i^{th}$ output sequence with length $|y_i|$, and $y_{i,t}$ is its $t^{th}$ token. $\pi_\theta$ and $\pi_{\theta_{\text{old}}}$ are the current and previous policies, $\hat{A}_i$ is the advantage, and $\varepsilon$ is the clipping parameter. The loss is expressed as:
+We train \methodname models using Group Sequence Policy Optimization (GSPO)~\citep{zheng2025groupsequencepolicyoptimization}. The loss function is expressed below where $\theta$ denotes model parameters; $i$ indexes sequences in a group of size $G$; $y_i$ is the $i^{th}$ output sequence with length $|y_i|$, and $y_{i,t}$ is its $t^{th}$ token. $\pi_\theta$ and $\pi_{\theta_{\text{old}}}$ are the current and previous policies, $\hat{A}_i$ is the advantage, and $\varepsilon$ is the clipping parameter:
 {
 \small % or \footnotesize
 \begin{align}
@@ -53,7 +52,7 @@ We train \methodname models using Group Sequence Policy Optimization (GSPO)~\cit
     \label{eq:gspo}
 \end{align}
 }
-where $s_i$ is the importance ratio derived from sequence likelihood~\cite{zheng-etal-2023-click}:
+where,  $s_i$ is the importance ratio derived from sequence likelihood~\cite{zheng-etal-2023-click}:
 \begin{align}
     s_i(\theta) = \exp\left( \frac{1}{|y_i|} \sum_{t=1}^{|y_i|} \log \frac{\pi_\theta(y_{i,t} | x, y_{i,<t})}{\pi_{\theta_{\text{old}}}(y_{i,t} | x, y_{i,<t})} \right)
     \label{eq:is}
@@ -63,5 +62,4 @@ Following DR. GRPO~\cite{liu2025understandingr1zeroliketrainingcritical}, we rem
     \hat{A}_i = r_i - \text{mean}(\mathbf{r}), \mathbf{r} = \{r_1, ..., r_G\}
 \end{align}
 
-Note that we disable entropy loss during training and mask loss from trajectories that exhaust maximum steps without calling the finish tool. 
-% \sonicomment{Include more details: we mask loss for trajectories that exhaust max steps without calling the finish tool; we disable the KL penalty (cite DAPO); we disable entropy loss in optimization.}
+We also disable entropy loss and mask loss from rollouts that exhaust maximum steps without calling the finish tool. Appendix~\ref{appendix:rl_ablation_study} includes additional analysis regarding the effect of RL algorithm on localization performance.
