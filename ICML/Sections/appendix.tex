@@ -254,8 +254,246 @@ The GSPO configuration used by \methodname performs competitively across all gra
 We find that \methodname is flexible in that it is not constrained by any specific tool nor is by maximum number of items it must return. While RepoNavigator was trained to utilize the flow of code execution, it achieves higher File-level F1 on SWE-Bench Pro, but lags in the Function-level F1 compared to \methodname. We see this a potential issue, we argue that the true interest of a SWE Agent is the parts of the code that are relevant to the issue and not generally the whole file where the issue might come from. Allowing and sub-agent such as \methodname to explore unconstrained by a particular method proves beneficial in this scenario. Additionally, our method also implies data creation that is much simpler and thus easier to scale as necessary. 
 
 Another popular approach to code localization configures the sub-agent to return $k$ number of candidate answers. A higher $k$ value has a higher recall or higher chance of returning highest number of relevant items but at the risk of also returning non-relevant ones. This poses a potential issue of distracting a SWE agent. On the other hand, reducing $k$ will alleviate this issue but at the cost of leaving out actually relevant items. In contrast, we do not configure \methodname with any $k$ and instead train it to with various cases where the correct set of items can be singular or multiple. This effectively strikes a balance between having to decide what $k$ value is appropriate.
-\section{Example Trajectories sampled from \methodname-4B and \methodname-14B}\label{appendix:traj_examples}
+\section{Example Trajectories for \methodname-4B and \methodname-14B}\label{appendix:traj_examples}
+% --- LaTeX Code Starts Here ---
 
+\begin{figure*}[!ht]
+    \centering
+
+% Action 1
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 1}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+rg "TruncDate" -t py
+\end{lstlisting}
+\end{tcolorbox}
+
+% Observation 1
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 1}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+django/db/models/functions/__init__.py
+5:    ExtractWeekDay, ExtractYear, Now, Trunc, TruncDate, TruncDay, TruncHour,
+30:    'TruncDate', 'TruncDay', 'TruncHour', 'TruncMinute', 'TruncMonth',
+
+django/db/models/functions/datetime.py
+287:class TruncDate(TruncBase):
+325:DateTimeField.register_lookup(TruncDate)
+
+tests/db_functions/datetime/test_extract_trunc.py
+13:    ExtractWeekDay, ExtractYear, Trunc, TruncDate, TruncDay, TruncHour,
+839:            DTModel.objects.annotate(extracted=TruncDate('start_datetime')).order_by('start_datetime'),
+\end{lstlisting}
+\end{tcolorbox}
+
+% Action 2
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 2}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+sed -n '1,500p' django/db/models/functions/datetime.py
+\end{lstlisting}
+\end{tcolorbox}
+
+% Observation 2 (Trimmed)
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 2 (Trimmed)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+from django.db.models.fields import (
+    DateField, DateTimeField, DurationField, Field, IntegerField, TimeField,
+)
+# ... [Imports and Extract classes] ...
+
+class TruncBase(TimezoneMixin, Transform):
+    def as_sql(self, compiler, connection):
+        inner_sql, inner_params = compiler.compile(self.lhs)
+        if isinstance(self.output_field, DateTimeField):
+            tzname = self.get_tzname()
+            sql = connection.ops.datetime_trunc_sql(self.kind, inner_sql, tzname)
+# ... [Truncation Logic] ...
+
+class TruncDate(TruncBase):
+    kind = 'date'
+    lookup_name = 'date'
+    output_field = DateField()
+
+    def as_sql(self, compiler, connection):
+        # Cast to date rather than truncate to date.
+        lhs, lhs_params = compiler.compile(self.lhs)
+        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+        sql = connection.ops.datetime_cast_date_sql(lhs, tzname)
+        return sql, lhs_params
+
+class TruncTime(TruncBase):
+    kind = 'time'
+    lookup_name = 'time'
+    output_field = TimeField()
+# ... [Remaining Trunc classes] ...
+\end{lstlisting}
+\end{tcolorbox}
+
+% Action 3
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 3}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+rg "get_current_timezone_name" -t py
+\end{lstlisting}
+\end{tcolorbox}
+\label{fig:event_stream_analysis}
+\end{figure*}
+\begin{figure*}
+% Observation 3
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation: Grep Results}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+django/db/models/functions/datetime.py
+25:                tzname = timezone.get_current_timezone_name()
+295:        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+308:        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+
+django/utils/timezone.py
+64:def get_current_timezone_name():
+\end{lstlisting}
+\end{tcolorbox}
+
+% Final Output (Action/Analysis Result)
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action (Submit Predictions)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+[
+    {
+        "file": "django/db/models/functions/datetime.py",
+        "class_name": "TruncDate",
+        "function_name": "as_sql"
+    },
+    {
+        "file": "django/db/models/functions/datetime.py",
+        "class_name": "TruncTime",
+        "function_name": "as_sql"
+    }
+]
+\end{lstlisting}
+\end{tcolorbox}
+\caption{Event stream of the issue resolution agent identifying relevant locations for TruncDate and TruncTime fixes.}
+\label{fig:event_stream_analysis}
+\end{figure*}
+
+% --- Part 1: Exploration and File Reading ---
+\begin{figure*}[!ht]
+    \centering
+
+% Step 1: Action (Parallel Search)
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Step 1 Action: Parallel Search for Key Terms}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+# Command 1
+find . -type f -name "*.py" | xargs rg -l TruncDate
+# Command 2
+find . -type f -name "*.py" | xargs rg -l TruncTime
+# Command 3
+rg -l TimeZone
+# Command 4
+rg -l TruncBase
+\end{lstlisting}
+\end{tcolorbox}
+
+% Step 1: Observation
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Step 1 Observation: Search Results}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+[Result 1: TruncDate]
+./django/db/models/functions/datetime.py
+./django/db/models/functions/__init__.py
+./tests/db_functions/datetime/test_extract_trunc.py
+
+[Result 2: TruncTime]
+./django/db/models/functions/datetime.py
+./django/db/models/functions/__init__.py
+./tests/db_functions/datetime/test_extract_trunc.py
+
+[Result 3: TimeZone]
+django/db/backends/postgresql/base.py
+django/templatetags/tz.py
+tests/db_functions/datetime/test_extract_trunc.py
+... (truncated)
+
+[Result 4: TruncBase]
+django/db/models/functions/datetime.py
+\end{lstlisting}
+\end{tcolorbox}
+\caption{Agent event stream Part 1: Broad search and code inspection.}
+\end{figure*}
+
+% \clearpage
+
+% --- Part 2: Specific Function Identification ---
+\begin{figure*}[!ht]
+    \centering
+% Step 2: Action (Reading source and searching for timezone usage)
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Step 2 Action: Read datetime.py and check Timezone implementation}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+# Command 1 & 2
+cat django/db/models/functions/datetime.py | sed -n '1,500p'
+cat django/db/models/functions/datetime.py | sed -n '501,1000p'
+# Command 3
+rg -n 'get_current_timezone_name' django/db/models/functions/datetime.py
+\end{lstlisting}
+\end{tcolorbox}
+
+% Step 2: Observation (Trimmed)
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Step 2 Observation: Code Analysis}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+[Result 1 & 2: File Content Snippet]
+class TimezoneMixin:
+    def get_tzname(self):
+        if settings.USE_TZ:
+            if self.tzinfo is None:
+                tzname = timezone.get_current_timezone_name()
+...
+class TruncDate(TruncBase):
+    def as_sql(self, compiler, connection):
+        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+        sql = connection.ops.datetime_cast_date_sql(lhs, tzname)
+
+[Result 3: Grep Results]
+25:                tzname = timezone.get_current_timezone_name()
+295:        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+308:        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+\end{lstlisting}
+\end{tcolorbox}
+
+% Step 3: Action (Specific Grep)
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Step 3 Action: Identifying SQL Casting calls}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+# Command 1
+rg -n 'datetime_cast_date_sql' django/db/models/functions/datetime.py
+# Command 2
+rg -n 'datetime_cast_time_sql' django/db/models/functions/datetime.py
+\end{lstlisting}
+\end{tcolorbox}
+
+% Step 3: Observation
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Step 3 Observation: SQL Function Locations}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+[Result 1]
+296:        sql = connection.ops.datetime_cast_date_sql(lhs, tzname)
+
+[Result 2]
+309:        sql = connection.ops.datetime_cast_time_sql(lhs, tzname)
+\end{lstlisting}
+\end{tcolorbox}
+
+% Step 4: Final Identification (Reasoning/Result)
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Step 4: Final Identification of Edit Locations}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+[
+    {
+        "file": "django/db/models/functions/datetime.py",
+        "class_name": "TruncDate",
+        "function_name": "as_sql"
+    },
+    {
+        "file": "django/db/models/functions/datetime.py",
+        "class_name": "TruncTime",
+        "function_name": "as_sql"
+    }
+]
+\end{lstlisting}
+\end{tcolorbox}
+
+\caption{Agent event stream Part 2: Finalizing target locations for implementation.}
+\label{fig:event_stream_final}
+\end{figure*}
 \section{Comparing closed-source LLMs across diverse agent scaffolds -- is a complex scaffold actually helpful?}\label{appendix:scaffold_api_discussion}
 \section{Prompts for Issue Resolution with Localization-Augmented Context}\label{appendix:prompts_swe_bench}
 We provide detailed user and system prompts in the OpenHands software agent SDK across various experimental settings used to demonstrate the advantages of augmenting issue resolution agents with relevant localization context (\S\ref{sec:downstream_swebench}). For the vanilla setup that is not augmented with any additional localization context, we provide the user prompt in Figure~\ref{fig:user_prompt_vanilla}. Figures~\ref{fig:user_prompt_codescout_augment1} and~\ref{fig:user_prompt_codescout_augment2} describe the user prompt for the experimental setting where the issue resolution agent is augmented with locations retrieved by \methodname-14B. Figures~\ref{fig:user_prompt_oracle_augment1} and~\ref{fig:user_prompt_oracle_augment2} describe the user prompt for the experimental setting where the issue resolution agent is augmented with oracle locations. All three settings use the default system prompt for OpenHands Software Agent SDK which is presented in Figures ~\ref{fig:swe_bench_system_prompt1},~\ref{fig:swe_bench_system_prompt2},~\ref{fig:swe_bench_system_prompt3},~\ref{fig:swe_bench_system_prompt4}, and~\ref{fig:swe_bench_system_prompt5}. 

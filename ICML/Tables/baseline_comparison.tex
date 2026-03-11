@@ -1,28 +1,51 @@
 % Define helper commands for icons
 \newcommand{\cmark}{\textcolor{green!80!black}{\ding{51}}}
 \newcommand{\xmark}{\textcolor{red!80!black}{\ding{55}}}
-
 \begin{table}[t]
 \centering
 \caption{Comparison of repository-level code localization methods. \methodname is the only approach that directly post-trains LLMs with RL using a simple, programming language-agnostic agent scaffold equipped \emph{solely} with a bash terminal.}
 \label{tab:baseline_comparison}
 \renewcommand{\arraystretch}{1.2}
-\setlength{\tabcolsep}{4pt} % Slightly increased spacing for 4 columns
+\setlength{\tabcolsep}{1.5pt} % Increased for better legibility since we've slimmed headers
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
 \toprule
 \textbf{Method} & 
 \textbf{\begin{tabular}[c]{@{}c@{}}Language-Agnostic\\Scaffold\end{tabular}} & 
-\textbf{\begin{tabular}[c]{@{}c@{}}Pure RL \\ post-training\end{tabular}} & 
-\textbf{\begin{tabular}[c]{@{}c@{}}\#  Tools\end{tabular}} \\ 
+\textbf{\begin{tabular}[c]{@{}c@{}}Pure RL\\post-training\end{tabular}} & 
+\textbf{\# Tools} \\ 
 \midrule
-LocAgent~\citep{chen-etal-2025-locagent}      & \xmark & \xmark & 3 \\
-CoSiL~\citep{liu2025cosil}         & \xmark & \xmark & 3 \\
-OrcaLoca~\citep{yu2025orcalocallmagentframework}      & \xmark & \xmark & 5 \\
-RepoSearcher~\citep{ma2025toolintegratedreinforcementlearningrepo}  & \xmark & \xmark & 5 \\
-RepoNavigator~\citep{zhang2025one} & \xmark & \cmark & 1 \\
+LocAgent \citep{chen-etal-2025-locagent}      & \xmark & \xmark & 3 \\
+CoSiL \citep{liu2025cosil}                    & \xmark & \xmark & 3 \\
+OrcaLoca \citep{yu2025orcalocallmagentframework} & \xmark & \xmark & 5 \\
+RepoSearcher \citep{ma2025toolintegratedreinforcementlearningrepo} & \xmark & \xmark & 5 \\
+RepoNavigator \citep{zhang2025one}            & \xmark & \cmark & 1 \\
 \textbf{\methodname} \textit{\textbf{(Ours)}} & \cmark & \cmark & 1 \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
+% \begin{table}[t]
+% \centering
+% \caption{Comparison of repository-level code localization methods. \methodname is the only approach that directly post-trains LLMs with RL using a simple, programming language-agnostic agent scaffold equipped \emph{solely} with a bash terminal.}
+% \label{tab:baseline_comparison}
+% \renewcommand{\arraystretch}{1.2}
+% \setlength{\tabcolsep}{1.5pt} % Slightly increased spacing for 4 columns
+% \resizebox{\columnwidth}{!}{%
+% \begin{tabular}{lccc}
+% \toprule
+% \textbf{Method} & 
+% \textbf{\begin{tabular}[c]{@{}c@{}}Language-Agnostic\\Scaffold\end{tabular}} & 
+% \textbf{\begin{tabular}[c]{@{}c@{}}Pure RL \\ post-training\end{tabular}} & 
+% \textbf{\begin{tabular}[c]{@{}c@{}}\#  Tools\end{tabular}} \\ 
+% \midrule
+% LocAgent~\citep{chen-etal-2025-locagent}      & \xmark & \xmark & 3 \\
+% CoSiL~\citep{liu2025cosil}         & \xmark & \xmark & 3 \\
+% OrcaLoca~\citep{yu2025orcalocallmagentframework}      & \xmark & \xmark & 5 \\
+% RepoSearcher~\citep{ma2025toolintegratedreinforcementlearningrepo}  & \xmark & \xmark & 5 \\
+% RepoNavigator~\citep{zhang2025one} & \xmark & \cmark & 1 \\
+% \textbf{\methodname} \textit{\textbf{(Ours)}} & \cmark & \cmark & 1 \\
+% \bottomrule
+% \end{tabular}%
+% }
+% \end{table}
