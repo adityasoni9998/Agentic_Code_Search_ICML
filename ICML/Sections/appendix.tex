@@ -337,7 +337,7 @@ rg "get_current_timezone_name" -t py
 \end{figure*}
 \begin{figure*}
 % Observation 3
-\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation: Grep Results}]
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 3}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
 django/db/models/functions/datetime.py
 25:                tzname = timezone.get_current_timezone_name()
@@ -350,7 +350,7 @@ django/utils/timezone.py
 \end{tcolorbox}
 
 % Final Output (Action/Analysis Result)
-\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action (Submit Predictions)}]
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action (Predictions Submitted and Agent Terminated)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
 [
     {
@@ -366,7 +366,7 @@ django/utils/timezone.py
 ]
 \end{lstlisting}
 \end{tcolorbox}
-\caption{Event stream of the issue resolution agent identifying relevant locations for TruncDate and TruncTime fixes.}
+\caption{Trajectory for \methodname-14B}
 \label{fig:event_stream_analysis}
 \end{figure*}
 
@@ -474,7 +474,7 @@ rg -n 'datetime_cast_time_sql' django/db/models/functions/datetime.py
 \end{tcolorbox}
 
 % Step 4: Final Identification (Reasoning/Result)
-\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Step 4: Final Identification of Edit Locations}]
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title={\small Step 4: Final Identification of Edit Locations}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
 [
     {
