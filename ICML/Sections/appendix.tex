@@ -335,7 +335,7 @@ rg "get_current_timezone_name" -t py
 \end{tcolorbox}
 \label{fig:event_stream_analysis}
 \end{figure*}
-\begin{figure*}
+\begin{figure*}[!ht]
 % Observation 3
 \begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 3}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
@@ -371,11 +371,11 @@ django/utils/timezone.py
 \end{figure*}
 
 % --- Part 1: Exploration and File Reading ---
-\begin{figure*}[!ht]
+\begin{figure*}[!t]
     \centering
 
 % Step 1: Action (Parallel Search)
-\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Step 1 Action: Parallel Search for Key Terms}]
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 1 (4 parallel tool calls)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
 # Command 1
 find . -type f -name "*.py" | xargs rg -l TruncDate
@@ -389,25 +389,25 @@ rg -l TruncBase
 \end{tcolorbox}
 
 % Step 1: Observation
-\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Step 1 Observation: Search Results}]
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 1}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
-[Result 1: TruncDate]
+# [Results for Command 1]
 ./django/db/models/functions/datetime.py
 ./django/db/models/functions/__init__.py
 ./tests/db_functions/datetime/test_extract_trunc.py
 
-[Result 2: TruncTime]
+# [Results for Command 2]
 ./django/db/models/functions/datetime.py
 ./django/db/models/functions/__init__.py
 ./tests/db_functions/datetime/test_extract_trunc.py
 
-[Result 3: TimeZone]
+# [Results for Command 3]
 django/db/backends/postgresql/base.py
 django/templatetags/tz.py
 tests/db_functions/datetime/test_extract_trunc.py
 ... (truncated)
 
-[Result 4: TruncBase]
+# [Results for Command 4]
 django/db/models/functions/datetime.py
 \end{lstlisting}
 \end{tcolorbox}
