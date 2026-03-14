@@ -15,7 +15,10 @@ Simultaneously, there have been a number of anecdotal reports from industry rega
 Given this background, we address the fundamental research question: \emph{given an appropriate reinforcement learning algorithm, what is an effective recipe to train a code localization agent that simply uses the terminal tool typical of more generic coding agents, yet achieves competitive or superior accuracy over agents using special-purpose tools?}
 In this work, we provide the first public demonstration of such a recipe, which involves scalable methods for data and environment creation (\S\ref{sec:data_creation}), a standard agent scaffold (\S\ref{sec:agent_scaffold}), as well as careful attention to reward design (\S\ref{sec:reward_design}) and training algorithm (\S\ref{sec:train_algo}).
 In experiments (\S\ref{sec:experiments}, \autoref{sec:results}), we find that the resulting model \methodname achieves localization performance superior to or competitive with existing methods on a variety of localization datasets derived from SWE-Bench Lite, Verified, and Pro.
-Importantly, all models and code are released publicly, building a strong baseline for future development in the community to build upon.\sonicomment{Do we need to explicitly create a bulleted list of research contributions with 3 points as done by some papers?}
+Importantly, all models and code are released publicly, building a strong baseline for future development in the community to build upon.
+% \sonicomment{Do we need to explicitly create a bulleted list of research contributions with 3 points as done by some papers?}
+% \gncomment{No, these are often repetitive and unnecessary}
+% \sonicomment{Ok sir, thanks!}
 
 % To address this inefficiency, the community has begun exploring specialized \textbf{localization} subagents that identify relevant code before handing off to a downstream code editing agent, rather than relying on a monolithic agent to perform both search and editing~\citep{zhang2026toolenoughreinforcementlearning}.
 
