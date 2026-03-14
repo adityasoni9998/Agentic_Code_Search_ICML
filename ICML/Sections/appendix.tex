@@ -215,9 +215,9 @@ This section presents the RL reward curves and SFT loss curves from the training
 \section{Limitations and Directions for Future Work}\label{appendix:future_work}
 Although the proposed \methodname recipe is significantly more general and scalable than most prior approaches to code localization, several important limitations remain. First, our training and evaluation experiments are largely restricted to Python repositories. This constraint arises primarily from the lack of large-scale training counterparts to evaluation benchmarks such as Multi-SWE-Bench~\citep{zan2025multiswebench}, which contains issues from repositories written in languages other than Python. Furthermore, extracting ground-truth localization targets requires programming language-specific processing of ground-truth code patches which is another reason for this limitation. However, note that these are not necessarily limitations of our agent scaffold or RL recipe and we leave it for future work to curate training datasets and develop code localization approaches for a broader range of programming languages.
 
-Another limitation is that our ground-truth localization targets are primarily derived from the modified regions of the reference code patches. While this provides a practical approximation of the relevant files, classes, and functions, it may omit other code segments that are important for understanding or resolving an issue but do not require direct modification. As a result, the extracted ground-truth sets may not fully capture the complete context needed for issue resolution. Note that this limitation exists in most baselines we compare \methodname against.
+Another limitation is that our ground-truth localization targets are primarily derived from the modified regions of the reference code patches. While this provides a practical approximation of the relevant files, classes, and functions, it may omit other code segments that are important for understanding or resolving an issue but do not require direct modification. As a result, the extracted ground-truth sets may not fully capture the complete context needed for issue resolution. Note that this limitation also exists in all the baselines we compare \methodname against.
 
-Finally, localizing relevant/faulty code from the repository given an issue description does not cover the broader scope of repository-level code search tasks, and our work does not address general repository-level question-answering tasks like those covered by benchmarks like CodeAssistBench~\citep{kim2026codeassistbenchcabdataset} and SWE-QA~\citep{peng2025sweqalanguagemodelsanswer}. Future research directions include expanding the scope of our work to a broader range of repository-level code search and question-answering tasks.
+Finally, localizing relevant/faulty code from the repository given an issue description does not cover the broader scope of repository-level code search tasks, and our work does not address general-purpose repository-level question-answering/search tasks like those covered by benchmarks like CodeAssistBench~\citep{kim2026codeassistbenchcabdataset} and SWE-QA~\citep{peng2025sweqalanguagemodelsanswer}. Future research directions include expanding the scope of our work to a broader range of tasks requiring repository-level code localization.
 
 \section{How does choice of RL algorithm impact localization performance?}\label{appendix:rl_ablation_study}
 
@@ -242,22 +242,31 @@ We next isolate the effect of individual design choices by changing exactly one 
 
 \emph{Advantage normalization.} GRPO and SAPO both standardize advantages by their standard deviation, while GSPO does not. Enabling this by setting \texttt{grpo\_norm\_by\_std=true} slightly lowers file-level F1 (54.83\% $\to$ 52.73\%) but improves module- and function-level metrics (31.43\% $\to$ \textbf{34.37\%} and 23.29\% $\to$ \textbf{26.41\%}).
 
-\paragraph{Takeaway.}
-The GSPO configuration used by \methodname performs competitively across all granularities, supporting its use as a reasonable default. More broadly, the relatively narrow performance range across recipes indicates that, for the code localization task with \texttt{Qwen3-4B/14B}, the choice of reward design (\S\ref{sec:reward_design}) and agent scaffold (\S\ref{sec:agent_scaffold}) likely matters more than the specific RL algorithm, consistent with our recipe-oriented perspective.
+These findings indicate that the GSPO configuration used by \methodname performs competitively across all granularities, supporting its use as a reasonable default. More broadly, the relatively narrow performance range across recipes indicates that, for the code localization task with \texttt{Qwen3-4B/14B}, the choice of reward design (\S\ref{sec:reward_design}) and agent scaffold (\S\ref{sec:agent_scaffold}) likely matters more than the specific RL algorithm, consistent with our recipe-oriented perspective.
   
-  
+
 \input{ICML/Tables/results_train_ablation_detailed}
 % \sonicomment{TODO: Yuchen (Leon) has run some new experiments by trying different training algorithms with 4B model. It is an interesting ablation study to write here or in appendix.}
 % \yccomment{The ckpts are here with a doc: https://huggingface.co/Leon-Leee/codescout-alg-variants. I'll add a summary later to clarify what are ablated by the variants. But I haven't fully aligned my benchmark running with yours. Should I add a table of the eval scores on SWEBench-lite?}
+
+\section{Example Trajectories for \methodname-4B and \methodname-14B}\label{appendix:traj_examples}
+This section provides some example trajectories sampled from \methodname-4B and \methodname-14B models using our evaluation setup (\S\ref{sec:eval_benchmarks}). We use an identical GitHub issue (\texttt{django\_\_django-13363}) from the SWE-Bench Verified benchmark~\citep{chowdhury2024swebenchverified} for both these models to allow a direct comparison of their tool-use behaviors and problem-solving approaches. Note that both models achieve a perfectly correct localization for this instance, i.e. they achieve an F1 score of 1.0 for all three granularities: file, module, and function. Note that we omit the system prompt and user prompt (which mentions the issue description) for these example rollouts. Figures \ref{fig:traj_14B_p1} and \ref{fig:traj_14b_p2} present the trajectory sampled from \methodname-14B, and figures \ref{fig:traj_4b_p2} and \ref{fig:traj_4b_p2} present the trajectory sampled from \methodname-4B.
+
+As noted in \S\ref{sec:tool_use_behaviour}, \methodname-14B relies only on two Unix command-line utilities for code localization: \texttt{ripgrep (rg)} and \texttt{sed}. By analyzing the trajectory, we observe that the model uses \texttt{ripgrep} for efficient keyword-based search of the code repository and \texttt{sed} for reading specific line-ranges from relevant files. Therefore, by exploring the repository for \emph{only} 3 steps and using \emph{only} 2 command-line utilities, \methodname-14B can determine the exact set of relevant set of files, classes, and functions that require modification to fix a given GitHub issue, highlighting the effectiveness of our approach.
+
+Interestingly, \methodname-4B uses a few more Unix command-line utilities for code localization: \texttt{rg}, \texttt{find}, \texttt{cat}, \texttt{xargs} and \texttt{sed}. The model mostly uses \texttt{rg}, \texttt{find} and \texttt{xargs} during keyword-based searches, and \texttt{sed} and \texttt{cat} for reading particular line-ranges from files. Furthermore, the bash commands issued by \methodname-4B are more complex and often use more than one Unix utility in the same command chained together through piping ($|$). Here as well, \methodname-4B performs code localization by exploring the repository for \emph{only} 3 steps and using \emph{only} 5 command-line utilities. For both the models, the command-line utilities used in these examples align with those used by the final training checkpoint in Figure~\ref{fig:merged_tool_use}.
+
+
+A noticeable characteristic of \methodname-4B is that it frequently performs parallel tool-calling unlike \methodname-14B. We hypothesize that this is because of two reasons: (1) our training algorithm, and (2) choice of base model for these models. Firstly, our training algorithm does not reward/encourage parallel tool-calling and this is mainly mentioned through the system prompt: thus rollouts with parallel tool-calling have no advantage over those without any parallel tool-calling during training. Secondly, the base model for \methodname-4B, \texttt{Qwen3-4B-Instruct-2507}, has strong instruction-following capabilities (stronger than \texttt{Qwen3-4B}, and possibly even better than \texttt{Qwen3-14B} which is the base model for \methodname-14B). As a result, the simpler prompting mechanism is sufficient for our 4B model but not for the 14B model.
+
 \section{Comparing with Scaffolds that predict ranked list of top-K locations}\label{appendix:topk_discussion}
 \sonicomment{TODO}
 We find that \methodname is flexible in that it is not constrained by any specific tool nor is by maximum number of items it must return. While RepoNavigator was trained to utilize the flow of code execution, it achieves higher File-level F1 on SWE-Bench Pro, but lags in the Function-level F1 compared to \methodname. We see this a potential issue, we argue that the true interest of a SWE Agent is the parts of the code that are relevant to the issue and not generally the whole file where the issue might come from. Allowing and sub-agent such as \methodname to explore unconstrained by a particular method proves beneficial in this scenario. Additionally, our method also implies data creation that is much simpler and thus easier to scale as necessary. 
 
 Another popular approach to code localization configures the sub-agent to return $k$ number of candidate answers. A higher $k$ value has a higher recall or higher chance of returning highest number of relevant items but at the risk of also returning non-relevant ones. This poses a potential issue of distracting a SWE agent. On the other hand, reducing $k$ will alleviate this issue but at the cost of leaving out actually relevant items. In contrast, we do not configure \methodname with any $k$ and instead train it to with various cases where the correct set of items can be singular or multiple. This effectively strikes a balance between having to decide what $k$ value is appropriate.
-\section{Example Trajectories for \methodname-4B and \methodname-14B}\label{appendix:traj_examples}
-% --- LaTeX Code Starts Here ---
 
-\begin{figure*}[!ht]
+
+\begin{figure*}[!t]
     \centering
 
 % Action 1
@@ -326,6 +335,10 @@ class TruncTime(TruncBase):
 ...
 \end{lstlisting}
 \end{tcolorbox}
+\caption{Example trajectory sampled from \methodname-14B for the task \texttt{django\_\_django-13363} (continued on the next page).}
+\label{fig:traj_14B_p1}
+\end{figure*}
+\begin{figure*}[!ht]
 
 % Action 3
 \begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 3 (Terminal Tool)}]
@@ -333,10 +346,8 @@ class TruncTime(TruncBase):
 rg "get_current_timezone_name" -t py
 \end{lstlisting}
 \end{tcolorbox}
-\label{fig:event_stream_analysis}
-\end{figure*}
-\begin{figure*}[!ht]
 % Observation 3
+
 \begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 3}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
 django/db/models/functions/datetime.py
@@ -366,12 +377,25 @@ django/utils/timezone.py
 ]
 \end{lstlisting}
 \end{tcolorbox}
-\caption{Trajectory for \methodname-14B for the task \texttt{}}
-\label{fig:event_stream_14B}
+
+\begin{tcolorbox}[colback=violet!3!white, colframe=violet!75!black, title={\small Reward Computation}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+Ground truth locations:
+    Files: django/db/models/functions/datetime.py
+    Modules: django/db/models/functions/datetime.py:TruncDate, django/db/models/functions/datetime.py:TruncTime
+    Functions: django/db/models/functions/datetime.py:TruncDate.as_sql, django/db/models/functions/datetime.py:TruncTime.as_sql
+Rewards:
+    File-level F1 score: 1.0
+    Module-level F1 score: 1.0
+    Function-level F1 score: 1.0
+\end{lstlisting}
+\end{tcolorbox}
+\caption{Example trajectory sampled from \methodname-14B for the task \texttt{django\_\_django-13363}.}
+\label{fig:traj_14b_p2}
 \end{figure*}
 
 % --- Part 1: Exploration and File Reading ---
-\begin{figure*}[!t]
+\begin{figure*}[!ht]
     \centering
 
 % Step 1: Action (Parallel Search)
@@ -389,7 +413,7 @@ rg -l TruncBase
 \end{tcolorbox}
 
 % Step 1: Observation
-\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 1}]
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 1 (trimmed)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
 # [Results for Command 1]
 ./django/db/models/functions/datetime.py
@@ -411,14 +435,6 @@ tests/db_functions/datetime/test_extract_trunc.py
 django/db/models/functions/datetime.py
 \end{lstlisting}
 \end{tcolorbox}
-\caption{Example trajectory for \methodname-4B for the task .... (continued on the next page)}
-\end{figure*}
-
-% \clearpage
-
-% --- Part 2: Specific Function Identification ---
-\begin{figure*}[!ht]
-    \centering
 % Step 2: Action (Reading source and searching for timezone usage)
 \begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 2 (Terminal Tool - 3 parallel calls)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
@@ -432,7 +448,7 @@ rg -n 'get_current_timezone_name' django/db/models/functions/datetime.py
 \end{tcolorbox}
 
 % Step 2: Observation (Trimmed)
-\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 2}]
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 2 (trimmed)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
 # [Results for Command 1]
 ...
@@ -454,7 +470,15 @@ class TruncDate(TruncBase):
 308:        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
 \end{lstlisting}
 \end{tcolorbox}
+\caption{Example trajectory sampled from \methodname-4B for the task \texttt{django\_\_django-13363} (continued on the next page).}
+\label{fig:traj_4b_p1}
+\end{figure*}
 
+% \clearpage
+
+% --- Part 2: Specific Function Identification ---
+\begin{figure*}[!ht]
+    \centering
 % Step 3: Action (Specific Grep)
 \begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 3 (Terminal Tool - 2 parallel calls)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
@@ -493,10 +517,22 @@ rg -n 'datetime_cast_time_sql' django/db/models/functions/datetime.py
 ]
 \end{lstlisting}
 \end{tcolorbox}
-
-\caption{Example trajectory for \methodname-4B for the task...}
-\label{fig:event_stream_final}
+\begin{tcolorbox}[colback=violet!3!white, colframe=violet!75!black, title={\small Reward Computation}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+Ground truth locations:
+    Files: django/db/models/functions/datetime.py
+    Modules: django/db/models/functions/datetime.py:TruncDate, django/db/models/functions/datetime.py:TruncTime
+    Functions: django/db/models/functions/datetime.py:TruncDate.as_sql, django/db/models/functions/datetime.py:TruncTime.as_sql
+Rewards:
+    File-level F1 score: 1.0
+    Module-level F1 score: 1.0
+    Function-level F1 score: 1.0
+\end{lstlisting}
+\end{tcolorbox}
+\caption{Example trajectory sampled from \methodname-4B for the task \texttt{django\_\_django-13363}.}
+\label{fig:traj_4b_p2}
 \end{figure*}
+
 \section{Comparing closed-source LLMs across diverse agent scaffolds -- is a complex scaffold actually helpful?}\label{appendix:scaffold_api_discussion}
 \section{Prompts for Issue Resolution with Localization-Augmented Context}\label{appendix:prompts_swe_bench}
 We provide detailed user and system prompts in the OpenHands software agent SDK across various experimental settings used to demonstrate the advantages of augmenting issue resolution agents with relevant localization context (\S\ref{sec:downstream_swebench}). For the vanilla setup that is not augmented with any additional localization context, we provide the user prompt in Figure~\ref{fig:user_prompt_vanilla}. Figures~\ref{fig:user_prompt_codescout_augment1} and~\ref{fig:user_prompt_codescout_augment2} describe the user prompt for the experimental setting where the issue resolution agent is augmented with locations retrieved by \methodname-14B. Figures~\ref{fig:user_prompt_oracle_augment1} and~\ref{fig:user_prompt_oracle_augment2} describe the user prompt for the experimental setting where the issue resolution agent is augmented with oracle locations. All three settings use the default system prompt for OpenHands Software Agent SDK which is presented in Figures ~\ref{fig:swe_bench_system_prompt1},~\ref{fig:swe_bench_system_prompt2},~\ref{fig:swe_bench_system_prompt3},~\ref{fig:swe_bench_system_prompt4}, and~\ref{fig:swe_bench_system_prompt5}. 
@@ -577,7 +613,7 @@ Be thorough in your exploration, testing, and reasoning. It's fine if your think
 
 \begin{figure*}[!h]
     \centering
-\begin{tcolorbox}[colback=yellow!6!white, colframe=yellow!75!black, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Locations Retrieved by \methodname-14B (continued)}]
+\begin{tcolorbox}[colback=blue!6!white, colframe=blue!45!white, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Locations Retrieved by \methodname-14B (continued)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
 I have access to a python code repository in the directory {{ instance.repo_path }} . You can explore and modify files using the available tools. Consider the following issue description:
 
@@ -644,7 +680,7 @@ Phase 5. FIX ANALYSIS: state clearly the problem and how to fix it
 \end{figure*}
 \begin{figure*}[!ht]
     \centering
-\begin{tcolorbox}[colback=yellow!6!white, colframe=yellow!75!black, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Locations Retrieved by \methodname-14B (continued)}]
+\begin{tcolorbox}[colback=blue!6!white, colframe=blue!45!white, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Locations Retrieved by \methodname-14B (continued)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
 Phase 6. FIX IMPLEMENTATION: Edit the source code to implement your chosen solution.
    6.1 Make minimal, focused changes to fix the issue.
