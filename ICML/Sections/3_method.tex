@@ -1,3 +1,4 @@
+\input{ICML/Figures/system_diagram}
 \section{\methodname: An Effective RL Recipe for Code Localization}
 
 This section presents the methodology used to train \methodname, covering training data curation and environment construction (\S\ref{sec:data_creation}), the agent scaffold and tools (\S\ref{sec:agent_scaffold}), reward design (\S\ref{sec:reward_design}), and the overall RL training setup (\S\ref{sec:train_algo}).
@@ -5,8 +6,7 @@ This section presents the methodology used to train \methodname, covering traini
 \subsection{Data and Environment Curation}
 \label{sec:data_creation}
 
-\gncomment{As discussed in our meeting, having a figure of how we turn issue resolution results into code localization data would be good.}
-
+% \gncomment{As discussed in our meeting, having a figure of how we turn issue resolution results into code localization data would be good.}
 We describe our approach to curating data and constructing RL environments for training \methodname.
 
 Given a GitHub issue $\mathcal{I}$ in a Python code repository $\mathcal{R}$, we process the ground-truth patch $\mathcal{P}$ that fixes the issue to extract the ground-truth localization target $y^{*}$ at three levels of granularity: files, modules, and functions. The LLM agent is tasked with predicting $y^{*}$ given the issue description and the pre-PR repository state. 
@@ -21,7 +21,8 @@ We construct the RL environment by cloning the pre-PR commit of the repository t
 
 We use the OpenHands Software Agent SDK~\cite{wang2025openhandssoftwareagentsdk} to implement our scaffold because it performs strongly across software engineering benchmarks, implements core tools (e.g., terminal), supports parallel tool-calling, and offers a modular design that easily integrates with our training backend. 
 
-The agent is primarily equipped with a \texttt{Terminal} tool that supports standard Unix commands (e.g., \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, \texttt{sed}). To accelerate grep-style code search, we install ripgrep~\citep{ripgrep} in the agent environment and explicitly prompt the agent to use it \gncomment{Many people may not know what ripgrep is, so it'd be good to explain it a little more.}. In addition, the agent uses a \texttt{LocalizationFinish} tool to submit predicted files, modules, and functions. We refer to this scaffold as \textbf{OpenHands-Bash}.
+% \gncomment{Many people may not know what ripgrep is, so it'd be good to explain it a little more.}. 
+The agent is primarily equipped with a \texttt{Terminal} tool that supports standard Unix commands (e.g., \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, \texttt{sed}). To accelerate grep-style code search, we install ripgrep~\citep{ripgrep} in the agent environment and explicitly prompt the agent to use it. In addition, the agent uses a \texttt{LocalizationFinish} tool to submit predicted files, modules, and functions. We refer to this scaffold as \textbf{OpenHands-Bash}.
 
 % \yccomment{In my experiments, omitting `ripgrep` can possibly lead to accumulated timeout errors in the async RL system, causing crashes at longer step limits; would it be worth mentioning this in the main text? -- soni: feel free to point to appendix if you have a concrete run -- yc: I'll check if my logs can support as evidences...} 
 
@@ -29,7 +30,8 @@ Our initial experiments used a string-based output format from \citet{chen-etal-
 
 \subsection{Reward Design}\label{sec:reward_design}
 
-For each multi-turn trajectory $\tau$ sampled from the LLM agent, we extract the predicted localization output $y$ from the \texttt{LocalizationFinish} tool, which specifies predicted files, modules, and functions. Given the ground-truth localization target $y^{\star}$, we compute F1 scores between $y$ and $y^{\star}$ at three granularities, file, module, and function, denoted by $r^{\mathsf{F1-file}}$, $r^{\mathsf{F1-module}}$, and $r^{\mathsf{F1-func}}$, respectively \gncomment{These rewards are not sufficiently specified. First add the example and some more notation to section 3.1 to define the file-level, module-level, and function-level targets, and then add an explanation of how you calculate the f-measure here (f-measure can be brief ofc, most people know that).}. We define the reward as the sum of these three components:
+For each multi-turn trajectory $\tau$ sampled from the LLM agent, we extract the predicted localization output $y$ from the \texttt{LocalizationFinish} tool, which specifies predicted files, modules, and functions. Given the ground-truth localization target $y^{\star}$, we compute F1 scores between $y$ and $y^{\star}$ at three granularities, file, module, and function, denoted by $r^{\mathsf{F1-file}}$, $r^{\mathsf{F1-module}}$, and $r^{\mathsf{F1-func}}$, respectively 
+% \gncomment{These rewards are not sufficiently specified. First add the example and some more notation to section 3.1 to define the file-level, module-level, and function-level targets, and then add an explanation of how you calculate the f-measure here (f-measure can be brief ofc, most people know that).}. We define the reward as the sum of these three components:
 \begin{equation}
 \begin{aligned}
     r(\tau, y, y^{\star}) &= r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) \\
