@@ -1,37 +1,29 @@
 \input{ICML/Figures/system_diagram}
 \section{\methodname: An Effective RL Recipe for Code Localization}
 
-This section presents the methodology used to train \methodname, covering training data curation and environment construction (\S\ref{sec:data_creation}), the agent scaffold and tools (\S\ref{sec:agent_scaffold}), reward design (\S\ref{sec:reward_design}), and the overall RL training setup (\S\ref{sec:train_algo}).
+This section presents the methodology used to train \methodname, covering training data curation and environment construction (\S\ref{sec:data_creation}), the agent scaffold and tools (\S\ref{sec:agent_scaffold}), reward design (\S\ref{sec:reward_design}), and the overall RL training setup (\S\ref{sec:train_algo}). Figure~\ref{fig:system_diagram} provides an overview of our approach.
 
 \subsection{Data and Environment Curation}
 \label{sec:data_creation}
-
-% \gncomment{As discussed in our meeting, having a figure of how we turn issue resolution results into code localization data would be good.}
 We describe our approach to curating data and constructing RL environments for training \methodname.
 
-Given a GitHub issue $\mathcal{I}$ in a Python code repository $\mathcal{R}$, we process the ground-truth patch $\mathcal{P}$ that fixes the issue to extract the ground-truth localization target $y^{*}$ at three levels of granularity: files, modules, and functions. The LLM agent is tasked with predicting $y^{*}$ given the issue description and the pre-PR repository state. 
-We build on patch-processing scripts from LocAgent~\citep{chen-etal-2025-locagent} and extend them to (i) detect additions of member functions and class attributes at the module and file levels, (ii) capture modifications to import statements and global variables at the file level, and (iii) ignore edits to docstrings within functions and classes.
-% \sonicomment{Can we just mention we adapt LocAgent logic and push (non-interesting) details to appendix?}\yccomment{Maybe keep one-sentence summary here and move the three bullet details to appendix for readability; add a pointer to the appendix.}\sonicomment{let us just keep it here for now}
+Given a GitHub issue $\mathcal{I}$ in a Python repository $\mathcal{R}$, we process the ground-truth issue resolution patch $\mathcal{P}$ to extract the localization targets at three granularities. Specifically, we define the ground-truth target as $y^{\star} = (F^{\star}, M^{\star}, U^{\star})$, where $F^{\star} = {f_1^{\star}, \dots, f_{N_f}^{\star}}$ is the set of modified files, $M^{\star} = {m_1^{\star}, \dots, m_{N_m}^{\star}}$ is the set of modified modules, and $U^{\star} = {u_1^{\star}, \dots, u_{N_u}^{\star}}$ is the set of functions or methods edited by the patch $\mathcal{P}$. An example of these targets is illustrated in Figure~\ref{fig:system_diagram}. The LLM agent is tasked with predicting $y^{\star}$ given the issue description $\mathcal{I}$ and the pre-PR repository state $\mathcal{R}$. We extract ground truth by using modified patch-processing scripts from LocAgent~\citep{chen-etal-2025-locagent} and enhance them to (i) detect additions of member functions and class attributes at the module and file levels, (ii) capture modifications to import statements and global variables at the file level, and (iii) ignore edits to docstrings within functions and classes.
 
 We curate training instances by processing GitHub issues collected by prior work~\citep{yang2025swesmithscalingdatasoftware, pan2025trainingsoftwareengineeringagents}, which were originally intended for training agents to fix issues. We discard issues whose PRs create or delete files, as the agent cannot predict the name of newly created files and we cannot determine ground-truth modules or functions for deleted files. We also ignore non-Python files (e.g., \texttt{README.md}) in the ground truth because function- and module-level information cannot be extracted from them. We also discard instances with empty issue descriptions.
 
-We construct the RL environment by cloning the pre-PR commit of the repository to a specific location known to the agent via its prompt. Since the localization task does not require executing repository code, we do not install project dependencies or use sandboxing/containerization. Notably, since our agent scaffold only requires a bash terminal, environment setup overhead is significantly lower than scaffolds from prior work whose tools require code graphs, vector databases, or dependency parsers.
+We construct the RL environment by cloning the pre-PR commit of the repository to a specific location known to the agent via its prompt. Since the localization task does not require executing repository code, we do not install project dependencies or use sandboxing/containerization. Notably, since our agent scaffold only requires a terminal, environment setup overhead is significantly lower than scaffolds from prior work whose tools require code graphs, vector databases, or dependency parsers.
 
 \subsection{OpenHands-Bash: Our Agent Scaffold}\label{sec:agent_scaffold}
 
-We use the OpenHands Software Agent SDK~\cite{wang2025openhandssoftwareagentsdk} to implement our scaffold because it performs strongly across software engineering benchmarks, implements core tools (e.g., terminal), supports parallel tool-calling, and offers a modular design that easily integrates with our training backend. 
+We use the OpenHands Software Agent SDK~\cite{wang2025openhandssoftwareagentsdk} to implement our scaffold as it performs strongly across software engineering benchmarks, implements core tools (e.g., terminal), supports parallel tool-calling, and offers a modular design that easily integrates with our training backend.
 
-% \gncomment{Many people may not know what ripgrep is, so it'd be good to explain it a little more.}. 
-The agent is primarily equipped with a \texttt{Terminal} tool that supports standard Unix commands (e.g., \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, \texttt{sed}). To accelerate grep-style code search, we install ripgrep~\citep{ripgrep} in the agent environment and explicitly prompt the agent to use it. In addition, the agent uses a \texttt{LocalizationFinish} tool to submit predicted files, modules, and functions. We refer to this scaffold as \textbf{OpenHands-Bash}.
-
-% \yccomment{In my experiments, omitting `ripgrep` can possibly lead to accumulated timeout errors in the async RL system, causing crashes at longer step limits; would it be worth mentioning this in the main text? -- soni: feel free to point to appendix if you have a concrete run -- yc: I'll check if my logs can support as evidences...} 
+% \gncomment{Many people may not know what ripgrep is, so it'd be good to explain it a little more.}.\sonicomment{Done}
+The agent is primarily equipped with a \texttt{Terminal} tool that supports standard Unix commands (e.g., \texttt{rg} (ripgrep), \texttt{find}, \texttt{ls}, \texttt{grep}, \texttt{sed}). We install ripgrep~\citep{ripgrep} in the agent's environment, which is a command-line utility for fast grep-style search using regex patterns recursively through all code files in a directory. In addition, the agent uses a \texttt{LocalizationFinish} tool to submit predicted files, modules, and functions. We refer to this scaffold as \textbf{OpenHands-Bash}.
 
 Our initial experiments used a string-based output format from \citet{chen-etal-2025-locagent}, but we found agents trained with this format to be sensitive to noisy reward signals due to brittle format validation and parsing. We address this by requiring the agent to terminate via the \texttt{LocalizationFinish} tool that enforces a structured output schema and simplifies parsing and validation, improving reward-signal fidelity. Appendix~\ref{appendix:prompts} includes detailed prompts and tool definitions for our agent.
 
 \subsection{Reward Design}\label{sec:reward_design}
-
-For each multi-turn trajectory $\tau$ sampled from the LLM agent, we extract the predicted localization output $y$ from the \texttt{LocalizationFinish} tool, which specifies predicted files, modules, and functions. Given the ground-truth localization target $y^{\star}$, we compute F1 scores between $y$ and $y^{\star}$ at three granularities, file, module, and function, denoted by $r^{\mathsf{F1-file}}$, $r^{\mathsf{F1-module}}$, and $r^{\mathsf{F1-func}}$, respectively 
-% \gncomment{These rewards are not sufficiently specified. First add the example and some more notation to section 3.1 to define the file-level, module-level, and function-level targets, and then add an explanation of how you calculate the f-measure here (f-measure can be brief ofc, most people know that).}. We define the reward as the sum of these three components:
+For each multi-turn trajectory $\tau$ sampled from the LLM agent, we extract the predicted localization output $y = (F, M, G)$ from the \texttt{LocalizationFinish} tool, which specifies the predicted files, modules, and functions. Given the ground-truth localization $y^{\star} = (F^{\star}, M^{\star}, G^{\star})$, we compute F1 scores at each granularity. Concretely, for each set $S \in \{F, M, G\}$ with the corresponding ground truth $S^{\star} \in \{F^{\star}, M^{\star}, G^{\star}\}$, we compute the F1 score (which is the harmonic mean of precision and recall): $r^{\mathsf{F1-file}}$, $r^{\mathsf{F1-module}}$, and $r^{\mathsf{F1-func}}$. Our reward function is defined as:
 \begin{equation}
 \begin{aligned}
     r(\tau, y, y^{\star}) &= r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) \\
@@ -39,9 +31,7 @@ For each multi-turn trajectory $\tau$ sampled from the LLM agent, we extract the
 \end{aligned}
 \label{eqn:reward}
 \end{equation}
-In early experiments for \methodname-14B, we observed training collapse characterized by near-zero rewards in later stages. Our analysis indicated that the agent frequently exhausted the step budget without submitting predictions. To mitigate this issue, we use an auxiliary binary reward $r^{\mathsf{turn}}(\tau, k)$ that assigns 1 if and only if the agent terminates in exactly $k$ turns, where $k$ is the step limit. This simple mechanism encourages timely termination within the step limit. Accordingly, the final reward for \methodname-14B adds this binary term to $r(\tau, y, y^{\star})$ in Equation~\ref{eqn:reward}.
-
-We also explored auxiliary rewards to incentivize parallel tool-calling, motivated by SWE-grep~\citep{cognition2025swegrep}, but found these interventions to hurt overall performance. Thus, we instead explicitly prompt the agent to use parallel tool-calling (Appendix~\ref{appendix:prompts}).
+In early experiments for \methodname-14B, we observed training collapse characterized by near-zero rewards in later stages. Our analysis indicated that the agent frequently exhausted the step budget without submitting predictions. To mitigate this issue, we use an auxiliary binary reward $r^{\mathsf{turn}}(\tau, k)$ that assigns 1 if and only if the agent terminates in exactly $k$ turns, where $k$ is the step limit. This simple mechanism encourages timely termination within the step limit. Accordingly, the final reward for \methodname-14B adds this binary term to $r(\tau, y, y^{\star})$ in Equation~\ref{eqn:reward}. We also explored auxiliary rewards to incentivize parallel tool-calling, motivated by SWE-grep~\citep{cognition2025swegrep}, but found these interventions to hurt overall performance. Thus, we instead explicitly prompt the agent to use parallel tool-calling (Appendix~\ref{appendix:prompts}).
 
 \subsection{RL Training Algorithm}\label{sec:train_algo}
 
@@ -65,4 +55,4 @@ Following DR. GRPO~\cite{liu2025understandingr1zeroliketrainingcritical}, we rem
 \begin{align}
     \hat{A}_i = r_i - \text{mean}(\mathbf{r}), \mathbf{r} = \{r_1, ..., r_G\}
 \end{align}
-We also disable entropy loss and mask loss for rollouts that exhaust maximum steps without calling the finish tool. Appendix~\ref{appendix:rl_ablation_study} includes additional analysis regarding the effect of RL algorithm on localization performance.
+We also disable entropy loss and mask loss for rollouts that exhaust maximum steps without calling the finish tool. Appendix~\ref{appendix:rl_ablation_study} includes additional analysis on the effect of the RL algorithm on localization performance.
