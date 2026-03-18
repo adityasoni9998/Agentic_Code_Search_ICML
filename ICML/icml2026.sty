@@ -489,9 +489,9 @@ the offending package(s), or layout-changing commands and try again.
 \newcommand{\icmlcorrespondingauthor}[2]{%
   \ificmlshowauthors
     \ifdefined\icmlcorrespondingauthor@text
-      \g@addto@macro\icmlcorrespondingauthor@text{, #1 \textless{}#2\textgreater{}}
+      \g@addto@macro\icmlcorrespondingauthor@text{,  \textless{}#2\textgreater{}}
     \else
-      \gdef\icmlcorrespondingauthor@text{#1 \{{}#2\}{}@cs.cmu.edu}
+      \gdef\icmlcorrespondingauthor@text{\{{}#2\}@cs.cmu.edu}
     \fi
   \else
     \gdef\icmlcorrespondingauthor@text{Anonymous Author \textless{}anon.email@domain.com\textgreater{}}

@@ -31,13 +31,11 @@ breaklines=true,
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{array}
-\usepackage{graphicx}
 % Attempt to make hyperref and algorithmic work together better:
 \newcommand{\theHalgorithm}{\arabic{algorithm}}
 \newcommand{\methodname}{\textsc{CodeScout}\xspace}
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage{graphicx}
 \usepackage[table]{xcolor}
 % Define a custom color for the highlighted rows
 \definecolor{highlightcolor}{gray}{0.92}
@@ -101,8 +99,6 @@ breaklines=true,
 
 \twocolumn[
   \icmltitle{\methodname: \\
-  % Effective Reinforcement Learning Techniques for Agentic Code Search
-  % Training Open-Source LLM Agents with Reinforcement Learning for Repository-Level Localization
   An Effective Recipe for Reinforcement Learning of Code Search Agents
   }
 
@@ -134,9 +130,10 @@ breaklines=true,
     \icmlauthor{Leander Melroy Maben}{cmu}
     \icmlauthor{Graham Neubig}{cmu,openhands}
   \end{icmlauthorlist}
-  % Code: \footnote{\methodname is available at \url{https://github.com/OpenHands/codescout}}
   \centering \faGithub\ \textbf{Code:} \url{https://github.com/OpenHands/codescout}
 
+$\vcenter{\hbox{\resizebox{!}{0.5cm}{\includegraphics{ICML/Figures/hf-logo.png}}}}$ \textbf{Models \& Data:} \url{https://huggingface.co/collections/OpenHands/codescout}
+  % \scalebox{0.05}{\includegraphics{ICML/Figures/hf-logo.png}} \textbf{Models and Data: }
   \icmlaffiliation{cmu}{Carnegie Mellon University}
   \icmlaffiliation{openhands}{OpenHands}
   \icmlaffiliation{ind}{Independent}
