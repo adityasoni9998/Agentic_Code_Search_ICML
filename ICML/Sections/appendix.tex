@@ -266,23 +266,23 @@ As opposed to prior approaches that a fixed number of top-$K$ relevant locations
 
 Note that the choice of $K$ will also determine the trade-off between precision and recall and the results in \S\ref{sec:results} for these baselines are based on the corresponding default choice of $K$ used by their scaffolds. We also include comparisons with these methods for different choices of $K$ to understand the precision-recall tradeoff and to compare these methods with \methodname-4B and \methodname-14B models. Table~\ref{tab:return_at_k_swe_bench_verified} presents the detailed results for three choices of $K$ - 1, 3, and all (the default setting where K is set to 5). Impressively, \methodname models outperform all prior methods that use a larger LLM across different choices of K even when dynamically predicting a variable number of locations. Furthermore, note that there is significant variance in the precision, recall, and F1 scores of the baseline methods for different choices of K implying that deciding the right value of K for the optimal performance is non-trivial and also depends on the characteristics of the GitHub issue and dataset. Impressively, \methodname strikes the right balance between precision and recall as a result of its scaffold design and our RL recipe that incorporates both precision and recall by computing the F1 scores.
 \begin{table*}[!t]
-\caption{Comparison of \methodname with methods that predict a ranked list of top-K locations for different choices of K (Return@K) on \textbf{SWE-Bench Verified}. The setting \texttt{all} refers to the default setting with K$=$5 used by these scaffolds. Qwen2.5 models used by the baselines are instruct variants.}
+\caption{Comparison of \methodname with methods that predict a ranked list of top-K locations for different choices of K (Return@K) on \textbf{SWE-Bench Verified}. The setting \texttt{all} refers to the default setting with K$=$5 used by these scaffolds.}
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lc|ccc|ccc}
 \toprule
-\multirow{2}{*}{\textbf{Scaffold + LLM}} & \multirow{2}{*}{\textbf{Return@K}} & \multicolumn{3}{c}{\textbf{File}} & \multicolumn{3}{c}{\textbf{Function}} \\
+\multirow{2}{*}{\textbf{Scaffold + LLM}} & \multirow{2}{*}{\textbf{Return@K}} & \multicolumn{3}{c|}{\textbf{File}} & \multicolumn{3}{c}{\textbf{Function}} \\
 & & F1 & Prec. & Rec. & F1 & Prec. & Rec. \\
 \midrule
-\multirow{3}{*}{CoSIL + Qwen2.5-32B} & 1 & 57.25 & 64.65 & 51.36 & 29.11 & 42.51 & 22.13 \\
+\multirow{3}{*}{CoSIL + Qwen2.5-32B-Instruct} & 1 & 57.25 & 64.65 & 51.36 & 29.11 & 42.51 & 22.13 \\
 & 3 & 41.60 & 29.53 & 70.30 & 25.35 & 20.80 & 32.46 \\
 & all & 30.77 & 19.34 & 83.50 & 22.11 & 14.85 & 55.38 \\
 \midrule
-\multirow{3}{*}{Agentless + Qwen2.5-32B} & 1 & 56.17 & 63.93 & 50.08 & 22.18 & 32.78 & 16.75 \\
+\multirow{3}{*}{Agentless + Qwen2.5-32B-Instruct} & 1 & 56.17 & 63.93 & 50.08 & 22.18 & 32.78 & 16.75 \\
 & 3 & 41.46 & 30.13 & 66.45 & 23.51 & 20.83 & 26.98 \\
 & all & 35.38 & 25.60 & 78.93 & 27.33 & 24.07 & 40.97 \\
 \midrule
-\multirow{3}{*}{LocAgent + Qwen2.5-32B} & 1 & 64.66 & 78.31 & 55.06 & 32.78 & 52.06 & 23.92 \\
+\multirow{3}{*}{LocAgent + Qwen2.5-32B-Instruct} & 1 & 64.66 & 78.31 & 55.06 & 32.78 & 52.06 & 23.92 \\
 & 3 & 49.34 & 38.54 & 68.54 & 27.87 & 24.60 & 32.14 \\
 & all & 44.18 & 34.18 & 79.39 & 21.48 & 16.29 & 46.79 \\
 \midrule
