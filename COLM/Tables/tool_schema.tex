@@ -1,0 +1,26 @@
+\begin{table}[h]
+    \centering
+    \small
+    \resizebox{\columnwidth}{!}{
+    \begin{tabular}{lllc}
+        \toprule
+        \textbf{Tool Name} & \textbf{Parameters} & \textbf{Python Type / Constraints} & \textbf{Required} \\
+        \midrule
+        \multirow{5}{*}{\texttt{terminal}} 
+            & \texttt{command} & \texttt{str} & \cmark \\
+            & \texttt{security\_risk} & \texttt{Literal["UNKNOWN", "LOW", "MEDIUM", "HIGH"]} & \cmark \\
+            & \texttt{is\_input} & \texttt{bool} & \xmark \\
+            & \texttt{timeout} & \texttt{float} & \xmark \\
+            & \texttt{reset} & \texttt{bool} & \xmark \\
+        \midrule
+        \multirow{4}{*}{\texttt{localization\_finish}} 
+            & \texttt{locations} & \texttt{List[Dict[str, Optional[str]]]} & \cmark \\
+            & \quad $\hookrightarrow$ \texttt{file} & \texttt{str} & \cmark \\
+            & \quad $\hookrightarrow$ \texttt{class\_name} & \texttt{str} $|$ \texttt{None} & \xmark \\
+            & \quad $\hookrightarrow$ \texttt{function\_name} & \texttt{str} $|$ \texttt{None} & \xmark \\
+        \bottomrule
+    \end{tabular}
+    }
+        \caption{Pythonic Tool Schema for the tools used by OpenHands-Bash}
+    \label{tab:pythonic_tool_schemas}
+\end{table}

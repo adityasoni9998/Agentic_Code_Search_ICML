@@ -1,0 +1,38 @@
+\begin{table}[!t]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llccc}
+\toprule
+\textbf{Training Algorithm} & \textbf{Key Configuration} & \textbf{File F1} & \textbf{Module F1} & \textbf{Function F1} \\
+\midrule
+\multicolumn{5}{l}{\textit{Recipe-level comparison}} \\
+\midrule
+GSPO
+  & Seq-level ratio, tight clip ($\epsilon$=3e-4/4e-4), seq-mean reduction, no std norm
+  & \textbf{54.83\%} & 31.43\% & 23.29\% \\
+SAPO
+  & Soft gating, seq-mean reduction, std norm
+  & 49.05\% & 29.82\% & 22.00\% \\
+Dr.GRPO
+  & Token-level PPO clip ($\epsilon$=0.2), length-unbiased reduction, no std norm
+  & 52.42\% & 33.58\% & 25.13\% \\
+GRPO
+  & Token-level PPO clip ($\epsilon$=0.2), seq-mean reduction, std norm
+  & 47.59\% & 30.89\% & 22.20\% \\
+\midrule
+\multicolumn{5}{l}{\textit{Single-factor ablation from GSPO}} \\
+\midrule
+Length-unbiased reduction
+  & \texttt{loss\_reduction}: seq\_mean $\to$ seq\_mean\_token\_sum\_norm
+  & 42.02\% & 24.88\% & 18.53\% \\
+Std normalization
+  & \texttt{grpo\_norm\_by\_std}: false $\to$ true
+  & 52.73\% & \textbf{34.37\%} & \textbf{26.41\%} \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Ablation study on RL algorithm variants for \texttt{Qwen3-4B-Instruct-2507}, evaluated on SWE-Bench Pro.}
+\label{tab:results_ablation}
+\end{table}

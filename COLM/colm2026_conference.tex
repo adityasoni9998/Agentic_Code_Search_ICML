@@ -1,0 +1,134 @@
+
+\documentclass{article} % For LaTeX2e
+\usepackage[submission]{colm2026_conference}
+
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{fontawesome5}
+\usepackage{xcolor}
+\usepackage{makecell}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{pifont}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{wrapfig}
+\usepackage{booktabs} % for professional tables
+\usepackage{xspace}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+\newcommand{\methodname}{\textsc{CodeScout}\xspace}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage[table]{xcolor}
+% Define a custom color for the highlighted rows
+\definecolor{highlightcolor}{gray}{0.92}
+\definecolor{lightgolden}{rgb}{1.0, 0.95, 0.85} % For Method rows
+\definecolor{headergray}{rgb}{0.92, 0.92, 0.92} % For Closed-Source Header
+\definecolor{headerblue}{rgb}{0.88, 0.95, 1.0}  % For Open-Source Header
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{multirow}
+\usepackage{color-edits}
+\addauthor{ls}{purple}
+\addauthor{soni}{orange}
+\addauthor{ty}{teal}
+\addauthor{yc}{cyan}
+\addauthor{gn}{magenta}
+\lstset{
+basicstyle=\small\ttfamily,
+columns=flexible,
+breaklines=true,
+% breakindent=5pt      % Remove indentation on wrapped lines
+}
+% NOTE: including geometry package
+% The geometery package modifies some page properties when used. This can dramatically change the page margins, leading to severe template violation, and potential desk rejection. If the package is required, it can be used with the "pass" flag to skip the default page modifications, as in the following line:
+% \usepackage[pass]{geometry}
+
+\usepackage{lineno}
+
+\definecolor{darkblue}{rgb}{0, 0, 0.5}
+\hypersetup{colorlinks=true, citecolor=darkblue, linkcolor=darkblue, urlcolor=darkblue}
+
+
+\title{CodeScout: An Effective Recipe for Reinforcement Learning of Code Search Agents}
+
+% Authors must not appear in the submitted version. This should be be taken care of automatically as long as you are using the "submission" option for the colm2026_conference package. But it's on the authors to verify. Non-anonymous submissions will be rejected without review.
+
+\author{Antiquus S.~Hippocampus, Natalia Cerebro \& Amelie P. Amygdale \thanks{ Use footnote for providing further information
+about author (webpage, alternative address)---\emph{not} for acknowledging
+funding agencies.  Funding acknowledgements go at the end of the paper.} \\
+Department of Computer Science\\
+Cranberry-Lemon University\\
+Pittsburgh, PA 15213, USA \\
+\texttt{\{hippo,brain,jen\}@cs.cranberry-lemon.edu} \\
+\And
+Ji Q. Ren \& Yevgeny LeNet \\
+Department of Computational Neuroscience \\
+University of the Witwatersrand \\
+Joburg, South Africa \\
+\texttt{\{robot,net\}@wits.ac.za} \\
+\AND
+Coauthor \\
+Affiliation \\
+Address \\
+\texttt{email}
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+\begin{document}
+
+\ifcolmsubmission
+\linenumbers
+\fi
+
+\maketitle
+
+\input{COLM/Sections/abstract}
+\input{COLM/Sections/1_introduction}
+\input{COLM/Sections/2_task_background}
+\input{COLM/Sections/3_method}
+\input{COLM/Sections/4_experimental_setup}
+\input{COLM/Sections/5_results}
+\input{COLM/Sections/6_analysis}
+\input{COLM/Sections/8_conclusion}
+
+% \section*{Author Contributions}
+% If you'd like to, you may include  a section for author contributions as is done
+% in many journals. This is optional and at the discretion of the authors.
+
+% \section*{Acknowledgments}
+% Use unnumbered first level headings for the acknowledgments. All
+% acknowledgments, including those to funding agencies, go at the end of the paper.
+
+\section*{Ethics Statement}
+Authors can add an optional ethics statement to the paper. 
+For papers that touch on ethical issues, this section will be evaluated as part of the review process. The ethics statement should come at the end of the paper. It does not count toward the page limit, but should not be more than 1 page. 
+\bibliography{colm2026_conference}
+\bibliographystyle{colm2026_conference}
+\input{COLM/Sections/appendix}
+
+
+\appendix
+\end{document}

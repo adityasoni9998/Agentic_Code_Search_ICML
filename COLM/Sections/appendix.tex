@@ -1,0 +1,983 @@
+\appendix
+\onecolumn
+% \section{Training Hyperparameters}
+% \input{Tables/train_hyperparams}
+
+
+\section{Prompts and Tool Definitions for OpenHands-Bash}\label{appendix:prompts}
+Figures \ref{fig:system_prompt1},~\ref{fig:system_prompt2} describe the system prompt, and Figure \ref{fig:user_prompt} includes the user prompt, used for all LLMs (including \methodname) trained or evaluated with OpenHands-Bash (\S\ref{sec:agent_scaffold}). The system prompt specifies the \texttt{max\_turns} to be 6 for \methodname-4B and its base model, and to 4 for all other LLMs. Table~\ref{tab:pythonic_tool_schemas} provides the schemas for the tools used by OpenHands-Bash.
+\begin{figure*}[!h]
+    \centering
+\begin{tcolorbox}[colback=blue!6!white, colframe=blue!75!black, title=System Prompt for the OpenHands-Bash agent used by \methodname (continued on next page)]
+\begin{lstlisting}
+You are a specialized code localization agent. Your sole objective is to identify and return the files in the codebase that are relevant to the user's query.
+You are given access to the codebase in a linux file system.
+
+## PRIMARY DIRECTIVE
+- Find relevant files, do NOT answer the user's query directly
+- Prioritize precision: every file you return should be relevant
+- You have up to {{ max_turns }} turns to explore and return your answer
+
+## TOOL USAGE REQUIREMENTS
+
+### bash tool (REQUIRED for search)
+- You MUST use the bash tool to search and explore the codebase
+- Execute bash commands like: rg, grep, find, ls, cat, head, tail, sed
+- Use parallel tool calls: invoke bash tool up to 5 times concurrently in a single turn
+- NEVER exceed 5 parallel tool calls per turn
+- Common patterns:
+  * `rg "pattern" -t py` - search for code patterns
+  * `rg --files | grep "keyword"` - find files by name
+  * `cat path/to/file.py` - read file contents
+  * `find . -name "*.py" -type f` - locate files by extension
+  * `wc -l path/to/file.py` - count lines in a file
+  * `sed -n '1,100p' path/to/file.py` - read lines 1-100 of a file
+  * `head -n 100 path/to/file.py` - read first 100 lines
+  * `tail -n 100 path/to/file.py` - read last 100 lines
+
+### Reading Files (CRITICAL for context management)
+- NEVER read entire large files with `cat` - this will blow up your context window
+- ALWAYS check file size first: `wc -l path/to/file.py`
+- For files > 100 lines, read in chunks:
+  * Use `sed -n '1,100p' file.py` to read lines 1-100
+  * Use `sed -n '101,200p' file.py` to read lines 101-200
+  * Continue with subsequent ranges as needed (201-300, 301-400, etc.)
+- Strategic reading approach:
+  * Read the first 50-100 lines to see imports and initial structure
+  * Use `rg` to find specific patterns and their line numbers
+  * Read targeted line ranges around matches using `sed -n 'START,ENDp'`
+  * Only read additional chunks if the initial sections are relevant
+
+### Submitting Your Answer (REQUIRED)
+
+When you have identified all relevant locations, you MUST use the `localization_finish` tool to submit your results.
+
+**When to include what:**
+1. If the required modifications belong to a specific function that belongs to a class, provide the file path, class name, and function name.
+2. If the required modification belongs to a function that is not part of any class, provide the file path and function name.
+3. If the required modification does not belong to any specific class or a function (e.g. global variables, imports, new class, new global function etc.), it is sufficient to provide only the file path.
+\end{lstlisting}
+\end{tcolorbox}
+\caption{System prompt for the OpenHands-Bash agent scaffold used by \methodname (continued on next page).}
+\label{fig:system_prompt1}
+\end{figure*}
+
+\begin{figure*}[!h]
+    \centering
+\begin{tcolorbox}[colback=blue!6!white, colframe=blue!75!black, title=System Prompt for the OpenHands-Bash agent used by \methodname]
+\begin{lstlisting}[basicstyle=\ttfamily\small, breaklines=true, columns=fullflexible]
+4. If the required modification belongs to a class (e.g. adding a new method to a class), provide the file path and class name.
+
+## SEARCH STRATEGY
+
+1. **Initial Exploration**: Cast a wide net
+   - Search for keywords, function names, class names
+   - Check file names and directory structure
+   - Use up to 3 parallel bash calls to explore multiple angles
+   - Check file sizes with `wc -l` before reading
+   - Read promising files in chunks (lines 1-100) to verify relevance
+
+2. **Deep Dive**: Follow the most promising leads
+   - Use up to 3 parallel bash calls to investigate further
+   - Read files in chunks to confirm they address the query
+   - Use `rg` with line numbers to locate specific code, then read those ranges
+   - Start eliminating false positives
+
+3. **Final Verification**: Confirm your location list and terminate execution by calling the `localization_finish` tool
+
+## CRITICAL RULES
+- NEVER exceed 5 parallel bash tool calls in a single turn
+- ALWAYS use the `localization_finish` tool after identifying all relevant locations
+- ALWAYS use bash tool to search (do not guess file locations)
+- NEVER read entire large files - always read in chunks (100-line ranges)
+- Check file size with `wc -l` before reading
+- Read file contents in chunks to verify relevance before including them
+- Return file paths as they appear in the repository. Do not begin the path with "./"
+- Aim for high precision (all files relevant) and high recall (no relevant files missed)
+- Class and function names are OPTIONAL - only include when changes are at that level
+
+## EXAMPLE OUTPUT BEHAVIOUR
+Here are some examples of how to format your output when calling the `localization_finish` tool:
+- src/parsers/parser.py requires changes to imports, a function parse_data which belongs to the class DataParser, and another function __str__ inside the same class. This should be represented as three separate entries: one with just the file path and one each for the two functions parse_data and __str__ with file path, class name, and function name.
+- src/user.py requires changes to a global function get_user outside of any class. This should be represented as a single entry with file path and function name.
+- utils/visualizer.py requires adding new function visualize inside the class Visualizer. This should be represented as a single entry with file path and class name.
+- utils/configs/default_config.py requires adding a new global function and a new class. This should be represented as a single entry with just the file path. Do NOT include class or function names for this file since multiple implementations might be possible with different function names.
+\end{lstlisting}
+\end{tcolorbox}
+\caption{System prompt for the OpenHands-Bash scaffold used by \methodname.}
+\label{fig:system_prompt2}
+\end{figure*}
+
+
+
+\begin{figure*}[!ht]
+    \centering
+\begin{tcolorbox}[colback=orange!6!white, colframe=orange!75!black, title=User prompt for the OpenHands-Bash agent used by \methodname]
+\begin{lstlisting}
+I have access to a python code repository in the directory {{ working_dir }} . Consider the following issue description:
+
+<issue_description>
+{{ instance.problem_statement }}
+</issue_description>
+
+Act as a code search agent and localize the specific files, classes or functions of code that need modification to resolve the issue in <issue_description>.
+
+NOTE: You do not need to solve the issue, all you need to do is localize relevant code from the repository. Your output will be used to guide another agent to solve the issue.
+
+IMPORTANT: Your output MUST follow the below rules:
+1. The final output must be a tool call to the "localization_finish" tool containing relevant code locations.
+2. The locations of the file path must be RELATIVE to the {{ working_dir }} directory WITHOUT any leading "./" in the output.
+3. Only include those locations in your output that need modification to resolve the issue in <issue_description>. Do NOT include any locations that do not need modification.
+\end{lstlisting}
+\end{tcolorbox}
+\caption{User prompt for the OpenHands-Bash scaffold used by \methodname.}
+\label{fig:user_prompt}
+\end{figure*}
+\input{COLM/Tables/tool_schema}
+
+\section{Reward and Loss Curves for \methodname}\label{appendix:rl_loss_curves}
+\input{Figures/codescout_14b_reward_fig}
+\input{Figures/codescout_4b_reward_fig}
+\input{Figures/codescout_1.7b_reward_fig}
+\begin{wrapfigure}{r}{0.56\textwidth} % {r} for right side, 45% of text width
+    \centering
+    \includegraphics[width=0.56\textwidth]{Figures/codescout_1.7b/1.7B_sft_loss_curve.pdf} 
+    \caption{Training Loss curve during rejection sampling finetuning used to train \methodname-1.7B-RFT.}
+    \label{fig:codescout_1.7B_RFT}
+\end{wrapfigure}
+This section presents the RL reward curves and SFT loss curves from the training runs of \methodname. We present the aggregate reward (computed as the sum of the F1 scores across the three localization granularities for 4B and 1.7B, and for 14B as the sum of these three F1 scores and the auxiliary binary reward) and the individual file-level, module-level, and function-level F1 scores during training. Note that all reward curves are smoothed using a running average with a window of 16 training steps. Figures~\ref{fig:codescout_14b_reward}, \ref{fig:codescout_4b_reward}, and \ref{fig:codescout_1.7b_reward} present these reward curves for \methodname-14B, \methodname-4B, and \methodname-1.7B respectively. Furthermore, Figure~\ref{fig:codescout_1.7B_RFT} presents the loss curve for rejection sampling fine-tuning of \texttt{Qwen3-1.7B} resulting in \methodname-1.7B-RFT model.
+
+As expected, all reward curves across all models show an approximately increasing nature (or remain constant during the later stages of training). Notably, all the reward curves for \methodname-4B and the \methodname-14B models show an increasing trend with no visible signs of saturation, indicating that training further on more GitHub issues will likely result in even stronger localization performance. However, we observe that the reward curves for \methodname-1.7B have mostly plateaued and the model no longer shows signs of further improvement with more training. Interstingly, even after fine-tuning \texttt{Qwen3-1.7B} on \textbf{4K successful trajectories} sampled from \methodname-14B with the training loss approaching \emph{almost zero} (Figure~\ref{fig:codescout_1.7B_RFT}), we find that training this checkpoint further using reinforcement learning improves the model performance even further - we observe an increasing reward curve with a steep slope during the first $\approx$ 20 training steps before saturating. 
+
+\input{Tables/baselines_tool_descriptions}
+\section{Additional Discussion of Related Work}\label{appendix:related_work_detailed}
+\input{Sections/7_related_work}
+
+\section{Limitations and Directions for Future Work}\label{appendix:future_work}
+Although the proposed \methodname recipe is significantly more general and scalable than most prior approaches to code localization, several important limitations remain. First, our training and evaluation experiments are largely restricted to Python repositories. This constraint arises primarily from the lack of large-scale training counterparts to evaluation benchmarks such as Multi-SWE-Bench~\citep{zan2025multiswebench}, which contains issues from repositories written in languages other than Python. Moreover, extracting ground-truth localization targets requires programming language-specific processing of ground-truth code patches, which not only limits our ability to train agents for other programming languages but also evaluate zero-shot transfer of our models to these languages. However, note that these are not necessarily limitations of our agent scaffold or RL recipe and we leave it for future work to curate training datasets and develop patch processing methods (for extracting ground truth locations) for a broader range of programming languages.
+
+Another limitation is that our ground-truth localization targets are primarily derived from the modified regions of the reference code patches. While this provides a practical approximation of the relevant files, classes, and functions, it may omit other code segments that are important for understanding or resolving an issue but do not require direct modification. Note that this limitation also exists in all the baselines we compare \methodname against and is non-trivial to address because determining relevance of a code location (file/module/class) to a given GitHub issue is subjective and curating this data at a training scale makes this problem even harder to address.
+
+Finally, localizing relevant/faulty code from the repository given an issue description does not cover the broader scope of repository-level code search tasks, and our work does not address general-purpose repository-level question-answering/search tasks like those covered by benchmarks like CodeAssistBench~\citep{kim2026codeassistbenchcabdataset} and SWE-QA~\citep{peng2025sweqalanguagemodelsanswer}. Future research directions include expanding the scope of our work to a broader range of tasks requiring repository-level code localization.
+
+\section{How does choice of RL algorithm impact localization performance?}\label{appendix:rl_ablation_study}
+
+In \S\ref{sec:train_algo}, we described our choice of RL algorithm (GSPO) with modifications like no advantage standardization. A natural question is whether this particular configuration is optimal, or whether better performance can be achieved through other RL algorithms. We investigate this by training \texttt{Qwen3-4B-Instruct-2507} under a range of algorithm configurations, all sharing the same reward function which augments the reward from Equation~\ref{eqn:reward} with the auxiliary binary term $r^{\mathsf{turn}}$.
+
+\emph{Comparability note.} These ablation runs share the same learning rate, batch size, and number of rollouts as \methodname-4B (\S\ref{sec:train_setup}), but use 4 turns (vs.\ 6) in its system prompt and the auxiliary turn reward $r^{\mathsf{turn}}(\tau, k)$ with $k$ = 4. All ablation runs are trained for 200 steps; and small performance differences may fall within the range of training variance. We compare all the checkpoints by evaluating them on SWE-Bench Pro using the setup from \S\ref{sec:eval_benchmarks}.
+
+\paragraph{Recipe-level comparison.}
+We first compare four representative critic-free policy-gradient recipes. These methods avoid the memory overhead of a separate value network, making them practical for multi-turn agentic training with long trajectories. They differ primarily in the \emph{policy loss type} (how the importance ratio is computed and constrained) and the \emph{loss reduction} (how per-token losses are aggregated):
+\begin{itemize}
+    \item \textbf{GSPO}~\citep{zheng2025groupsequencepolicyoptimization} (our configuration): sequence-level importance ratio with tighter clipping ($\epsilon = $ 3e-4/4e-4), sequence-mean loss reduction, and no advantage standardization.
+    \item \textbf{GRPO}~\citep{shao2024deepseekmathpushinglimitsmathematical}: token-level PPO-clip loss ($\epsilon = $ 0.2) with advantage standardization.
+    \item \textbf{SAPO}~\citep{gao2025softadaptivepolicyoptimization}: replaces PPO clipping with a soft gating function that applies asymmetric temperatures to positive- and negative-advantage tokens, with advantage standardization.
+    \item \textbf{Dr.GRPO}~\citep{liu2025understandingr1zeroliketrainingcritical}: token-level PPO-clip loss ($\epsilon$=0.2) with length-unbiased loss reduction, without advantage standardization.
+\end{itemize}
+As shown in the top group of Table~\ref{tab:results_ablation}, all four recipes achieve file-level F1 within a range of 47--55\% and function-level F1 within the range of 22--25\%, suggesting that our task is somewhat insensitive to the choice of RL algorithm. GSPO achieves the highest file-level F1, while Dr.GRPO leads on module- and function-level F1 score.
+
+\paragraph{Single-factor ablations.}
+We next isolate the effect of individual design choices by changing exactly one factor from the GSPO configuration.
+
+\emph{Loss reduction.} Standard GRPO normalizes the per-sequence loss by the response length, which introduces a length bias~\citep{liu2025understandingr1zeroliketrainingcritical}. Dr.GRPO addresses this by dividing the per-sequence token sum by a fixed constant (the generation budget) instead. Inspired by the adoption of this technique in recent work~\citep{cognition2025swegrep}, we test whether it benefits GSPO by switching from \texttt{sequence\_mean} to \texttt{seq\_mean\_token\_sum\_norm} while keeping all other settings unchanged. This causes a substantial drop in file-level F1 (54.83\% $\to$ 42.02\%), suggesting it does not transfer well to GSPO's sequence-level importance ratio.
+
+\emph{Advantage normalization.} GRPO and SAPO both standardize advantages by their standard deviation, while GSPO does not. Enabling this by setting \texttt{grpo\_norm\_by\_std=true} slightly lowers file-level F1 (54.83\% $\to$ 52.73\%) but improves module- and function-level metrics (31.43\% $\to$ \textbf{34.37\%} and 23.29\% $\to$ \textbf{26.41\%}).
+
+These findings indicate that the GSPO configuration used by \methodname performs competitively across all granularities, supporting its use as a reasonable default. More broadly, the relatively narrow performance range across recipes indicates that, for the code localization task with \texttt{Qwen3-4B/14B}, the choice of reward design (\S\ref{sec:reward_design}) and agent scaffold (\S\ref{sec:agent_scaffold}) likely matters more than the specific RL algorithm, consistent with our recipe-oriented perspective.
+  
+
+\input{Tables/results_train_ablation_detailed}
+% \sonicomment{TODO: Yuchen (Leon) has run some new experiments by trying different training algorithms with 4B model. It is an interesting ablation study to write here or in appendix.}
+% \yccomment{The ckpts are here with a doc: https://huggingface.co/Leon-Leee/codescout-alg-variants. I'll add a summary later to clarify what are ablated by the variants. But I haven't fully aligned my benchmark running with yours. Should I add a table of the eval scores on SWEBench-lite?}
+
+\section{Example Trajectories for \methodname-14B and \methodname-4B}\label{appendix:traj_examples}
+This section provides some example trajectories sampled from \methodname-14B and \methodname-4B models using our evaluation setup (\S\ref{sec:eval_benchmarks}). We use an identical GitHub issue (\texttt{django\_\_django-13363}) from the SWE-Bench Verified benchmark~\citep{chowdhury2024swebenchverified} for both these models to allow a direct comparison of their tool-use behaviors and problem-solving approaches. Note that both models achieve  perfectly correct localization for this instance, i.e. they achieve an F1 score of 1.0 for all three granularities: file, module, and function. Note that we omit the system prompt and user prompt (which mentions the issue description) for these example rollouts. Figures \ref{fig:traj_14B_p1} and \ref{fig:traj_14b_p2} present the trajectory sampled from \methodname-14B, and figures \ref{fig:traj_4b_p2} and \ref{fig:traj_4b_p2} present the trajectory sampled from \methodname-4B.
+
+As noted in \S\ref{sec:tool_use_behaviour}, \methodname-14B relies only on two Unix command-line utilities for code localization: \texttt{ripgrep (rg)} and \texttt{sed}. By analyzing the trajectory, we observe that the model uses \texttt{ripgrep} for efficient keyword-based search of the code repository and \texttt{sed} for reading specific line-ranges from relevant files. Therefore, by exploring the repository for \emph{only} 3 steps and using \emph{only} 2 command-line utilities, \methodname-14B can determine the exact set of relevant set of files, classes, and functions that require modification to fix a given GitHub issue, highlighting the effectiveness of our approach.
+
+Interestingly, \methodname-4B uses a few more Unix command-line utilities for code localization: \texttt{rg}, \texttt{find}, \texttt{cat}, \texttt{xargs} and \texttt{sed}. The model mostly uses \texttt{rg}, \texttt{find} and \texttt{xargs} during keyword-based searches, and \texttt{sed} and \texttt{cat} for reading particular line-ranges from files. Furthermore, the bash commands issued by \methodname-4B are more complex and often use more than one Unix utility in the same command chained together through piping ($|$). Here as well, \methodname-4B performs code localization by exploring the repository for \emph{only} 3 steps and using \emph{only} 5 command-line utilities. For both the models, the command-line utilities used in these examples align with those used by the final training checkpoint in Figure~\ref{fig:merged_tool_use}.
+
+
+A noticeable characteristic of \methodname-4B is that it frequently performs parallel tool-calling unlike \methodname-14B. We hypothesize that this is because of two reasons: (1) our training algorithm, and (2) choice of base model for these models. Firstly, our training algorithm does not reward/encourage parallel tool-calling and this is mainly mentioned through the system prompt: thus rollouts with parallel tool-calling have no advantage over those without any parallel tool-calling during training. Secondly, the base model for \methodname-4B, \texttt{Qwen3-4B-Instruct-2507}, has strong instruction-following capabilities (stronger than \texttt{Qwen3-4B}, and possibly even better than \texttt{Qwen3-14B} which is the base model for \methodname-14B). As a result, the simpler prompting mechanism is sufficient for our 4B model but not for the 14B model.
+
+\section{Additional Comparison with Scaffolds that Predict a Ranked List of Top-$K$ Locations}\label{appendix:topk_discussion}
+As opposed to prior approaches that a fixed number of top-$K$ relevant locations RepoNavigator~\citep{zhang2025one} and \methodname are flexible and allow the agent to dynamically predict a variable number of locations. This has the added advantage of not having to choose an appropriate value of $K$ based on the domain or choice of evaluation benchmark. In particular, for our choice of evaluation benchmarks, the design choice of predicting a ranked list of top-$K$ locations (with $K$ generally set to 5) results in a higher recall but lower precision. Moreover, this design is particularly not suitable for RL fine-tuning of LLM agents, especially when $K$ is larger than the number of ground truth locations as there is no way to determine the relevance of the remaining locations predicted by the agent and the reward function will generally ignore these predictions completely during training.
+
+Note that the choice of $K$ will also determine the trade-off between precision and recall and the results in \S\ref{sec:results} for these baselines are based on the corresponding default choice of $K$ used by their scaffolds. We also include comparisons with these methods for different choices of $K$ to understand the precision-recall tradeoff and to compare these methods with \methodname-4B and \methodname-14B models. Table~\ref{tab:return_at_k_swe_bench_verified} presents the detailed results for three choices of $K$ - 1, 3, and all (the default setting where K is set to 5). Impressively, \methodname models outperform all prior methods that use a larger LLM across different choices of K even when dynamically predicting a variable number of locations. Furthermore, note that there is significant variance in the precision, recall, and F1 scores of the baseline methods for different choices of K implying that deciding the right value of K for the optimal performance is non-trivial and also depends on the characteristics of the GitHub issue and dataset. Impressively, \methodname strikes the right balance between precision and recall as a result of its scaffold design and our RL recipe that incorporates both precision and recall by computing the F1 scores.
+\begin{table*}[!t]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lc|ccc|ccc}
+\toprule
+\multirow{2}{*}{\textbf{Scaffold + LLM}} & \multirow{2}{*}{\textbf{Return@K}} & \multicolumn{3}{c|}{\textbf{File}} & \multicolumn{3}{c}{\textbf{Function}} \\
+& & F1 & Prec. & Rec. & F1 & Prec. & Rec. \\
+\midrule
+\multirow{3}{*}{CoSIL + Qwen2.5-32B-Instruct} & 1 & 57.25 & 64.65 & 51.36 & 29.11 & 42.51 & 22.13 \\
+& 3 & 41.60 & 29.53 & 70.30 & 25.35 & 20.80 & 32.46 \\
+& all & 30.77 & 19.34 & 83.50 & 22.11 & 14.85 & 55.38 \\
+\midrule
+\multirow{3}{*}{Agentless + Qwen2.5-32B-Instruct} & 1 & 56.17 & 63.93 & 50.08 & 22.18 & 32.78 & 16.75 \\
+& 3 & 41.46 & 30.13 & 66.45 & 23.51 & 20.83 & 26.98 \\
+& all & 35.38 & 25.60 & 78.93 & 27.33 & 24.07 & 40.97 \\
+\midrule
+\multirow{3}{*}{LocAgent + Qwen2.5-32B-Instruct} & 1 & 64.66 & 78.31 & 55.06 & 32.78 & 52.06 & 23.92 \\
+& 3 & 49.34 & 38.54 & 68.54 & 27.87 & 24.60 & 32.14 \\
+& all & 44.18 & 34.18 & 79.39 & 21.48 & 16.29 & 46.79 \\
+\midrule
+\methodname-4B & - & \underline{68.52} & 71.53 & 67.74 & \underline{36.78} & 40.71 & 35.72 \\
+\midrule
+\methodname-14B & - & \textbf{68.57} & 71.00 & 68.69 & \textbf{40.32} & 43.74 & 40.27 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Comparison of \methodname with methods that predict a ranked list of top-K locations for different choices of K (Return@K) on \textbf{SWE-Bench Verified}. The setting \texttt{all} refers to the default setting with K$=$5 used by these scaffolds.}
+\label{tab:return_at_k_swe_bench_verified}
+\end{table*}
+\begin{figure*}[!t]
+    \centering
+% Action 1
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 1 (Terminal Tool)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+rg "TruncDate" -t py
+\end{lstlisting}
+\end{tcolorbox}
+
+% Observation 1
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 1}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+django/db/models/functions/__init__.py
+5:    ExtractWeekDay, ExtractYear, Now, Trunc, TruncDate, TruncDay, TruncHour,
+30:    'TruncDate', 'TruncDay', 'TruncHour', 'TruncMinute', 'TruncMonth',
+
+django/db/models/functions/datetime.py
+287:class TruncDate(TruncBase):
+325:DateTimeField.register_lookup(TruncDate)
+
+tests/db_functions/datetime/test_extract_trunc.py
+13:    ExtractWeekDay, ExtractYear, Trunc, TruncDate, TruncDay, TruncHour,
+839:            DTModel.objects.annotate(extracted=TruncDate('start_datetime')).order_by('start_datetime'),
+\end{lstlisting}
+\end{tcolorbox}
+
+% Action 2
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 2 (Terminal Tool)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+sed -n '1,500p' django/db/models/functions/datetime.py
+\end{lstlisting}
+\end{tcolorbox}
+
+% Observation 2 (Trimmed)
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 2 (Trimmed)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+from django.db.models.fields import (
+    DateField, DateTimeField, DurationField, Field, IntegerField, TimeField,
+)
+... 
+
+class TruncBase(TimezoneMixin, Transform):
+    def as_sql(self, compiler, connection):
+        inner_sql, inner_params = compiler.compile(self.lhs)
+        if isinstance(self.output_field, DateTimeField):
+            tzname = self.get_tzname()
+            sql = connection.ops.datetime_trunc_sql(self.kind, inner_sql, tzname)
+...
+
+class TruncDate(TruncBase):
+    kind = 'date'
+    lookup_name = 'date'
+    output_field = DateField()
+
+    def as_sql(self, compiler, connection):
+        # Cast to date rather than truncate to date.
+        lhs, lhs_params = compiler.compile(self.lhs)
+        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+        sql = connection.ops.datetime_cast_date_sql(lhs, tzname)
+        return sql, lhs_params
+
+class TruncTime(TruncBase):
+    kind = 'time'
+    lookup_name = 'time'
+    output_field = TimeField()
+...
+\end{lstlisting}
+\end{tcolorbox}
+\caption{Example trajectory sampled from \methodname-14B for the task \texttt{django\_\_django-13363} (continued on the next page).}
+\label{fig:traj_14B_p1}
+\end{figure*}
+\begin{figure*}[!ht]
+
+% Action 3
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 3 (Terminal Tool)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+rg "get_current_timezone_name" -t py
+\end{lstlisting}
+\end{tcolorbox}
+% Observation 3
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 3}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+django/db/models/functions/datetime.py
+25:                tzname = timezone.get_current_timezone_name()
+295:        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+308:        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+
+django/utils/timezone.py
+64:def get_current_timezone_name():
+\end{lstlisting}
+\end{tcolorbox}
+
+% Final Output (Action/Analysis Result)
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 4 (Localization Finish Tool - Agent Loop Terminated)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+[
+    {
+        "file": "django/db/models/functions/datetime.py",
+        "class_name": "TruncDate",
+        "function_name": "as_sql"
+    },
+    {
+        "file": "django/db/models/functions/datetime.py",
+        "class_name": "TruncTime",
+        "function_name": "as_sql"
+    }
+]
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=violet!3!white, colframe=violet!75!black, title={\small Reward Computation}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+Ground truth locations:
+    Files: django/db/models/functions/datetime.py
+    Modules: django/db/models/functions/datetime.py:TruncDate, django/db/models/functions/datetime.py:TruncTime
+    Functions: django/db/models/functions/datetime.py:TruncDate.as_sql, django/db/models/functions/datetime.py:TruncTime.as_sql
+Rewards:
+    File-level F1 score: 1.0
+    Module-level F1 score: 1.0
+    Function-level F1 score: 1.0
+\end{lstlisting}
+\end{tcolorbox}
+\caption{Example trajectory sampled from \methodname-14B for the task \texttt{django\_\_django-13363}.}
+\label{fig:traj_14b_p2}
+\end{figure*}
+
+% --- Part 1: Exploration and File Reading ---
+\begin{figure*}[!ht]
+    \centering
+
+% Step 1: Action (Parallel Search)
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 1 (Terminal Tool - 4 parallel calls)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+# Command 1
+find . -type f -name "*.py" | xargs rg -l TruncDate
+# Command 2
+find . -type f -name "*.py" | xargs rg -l TruncTime
+# Command 3
+rg -l TimeZone
+# Command 4
+rg -l TruncBase
+\end{lstlisting}
+\end{tcolorbox}
+
+% Step 1: Observation
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 1 (trimmed)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+# [Results for Command 1]
+./django/db/models/functions/datetime.py
+./django/db/models/functions/__init__.py
+./tests/db_functions/datetime/test_extract_trunc.py
+
+# [Results for Command 2]
+./django/db/models/functions/datetime.py
+./django/db/models/functions/__init__.py
+./tests/db_functions/datetime/test_extract_trunc.py
+
+# [Results for Command 3]
+django/db/backends/postgresql/base.py
+django/templatetags/tz.py
+tests/db_functions/datetime/test_extract_trunc.py
+... (truncated)
+
+# [Results for Command 4]
+django/db/models/functions/datetime.py
+\end{lstlisting}
+\end{tcolorbox}
+% Step 2: Action (Reading source and searching for timezone usage)
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 2 (Terminal Tool - 3 parallel calls)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+# Command 1
+cat django/db/models/functions/datetime.py | sed -n '1,500p'
+# Command 2
+cat django/db/models/functions/datetime.py | sed -n '501,1000p'
+# Command 3
+rg -n 'get_current_timezone_name' django/db/models/functions/datetime.py
+\end{lstlisting}
+\end{tcolorbox}
+
+% Step 2: Observation (Trimmed)
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 2 (trimmed)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+# [Results for Command 1]
+...
+from django.utils import timezone
+class TimezoneMixin:
+    def get_tzname(self):
+...
+class TruncDate(TruncBase):
+    def as_sql(self, compiler, connection):
+        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+        sql = connection.ops.datetime_cast_date_sql(lhs, tzname)
+...
+
+# [Results for Command 2 (empty)]
+# [Results for Command 3]
+25:                tzname = timezone.get_current_timezone_name()
+295:        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+308:        tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
+\end{lstlisting}
+\end{tcolorbox}
+\caption{Example trajectory sampled from \methodname-4B for the task \texttt{django\_\_django-13363} (continued on the next page).}
+\label{fig:traj_4b_p1}
+\end{figure*}
+
+% \clearpage
+
+% --- Part 2: Specific Function Identification ---
+\begin{figure*}[!ht]
+    \centering
+% Step 3: Action (Specific Grep)
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 3 (Terminal Tool - 2 parallel calls)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+# Command 1
+rg -n 'datetime_cast_date_sql' django/db/models/functions/datetime.py
+# Command 2
+rg -n 'datetime_cast_time_sql' django/db/models/functions/datetime.py
+\end{lstlisting}
+\end{tcolorbox}
+
+% Step 3: Observation
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 3}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+# [Results for Command 1]
+296:        sql = connection.ops.datetime_cast_date_sql(lhs, tzname)
+
+# [Results for Command 2]
+309:        sql = connection.ops.datetime_cast_time_sql(lhs, tzname)
+\end{lstlisting}
+\end{tcolorbox}
+
+% Step 4: Final Identification (Reasoning/Result)
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!75!black, title={\small Action 4 (Localization Finish Tool - Agent Loop Terminated)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+[
+    {
+        "file": "django/db/models/functions/datetime.py",
+        "class_name": "TruncDate",
+        "function_name": "as_sql"
+    },
+    {
+        "file": "django/db/models/functions/datetime.py",
+        "class_name": "TruncTime",
+        "function_name": "as_sql"
+    }
+]
+\end{lstlisting}
+\end{tcolorbox}
+\begin{tcolorbox}[colback=violet!3!white, colframe=violet!75!black, title={\small Reward Computation}]
+\begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
+Ground truth locations:
+    Files: django/db/models/functions/datetime.py
+    Modules: django/db/models/functions/datetime.py:TruncDate, django/db/models/functions/datetime.py:TruncTime
+    Functions: django/db/models/functions/datetime.py:TruncDate.as_sql, django/db/models/functions/datetime.py:TruncTime.as_sql
+Rewards:
+    File-level F1 score: 1.0
+    Module-level F1 score: 1.0
+    Function-level F1 score: 1.0
+\end{lstlisting}
+\end{tcolorbox}
+\caption{Example trajectory sampled from \methodname-4B for the task \texttt{django\_\_django-13363}.}
+\label{fig:traj_4b_p2}
+\end{figure*}
+\section{Prompts for Issue Resolution with Localization-Augmented Context}\label{appendix:prompts_swe_bench}
+We provide detailed user and system prompts in the OpenHands software agent SDK across various experimental settings used to demonstrate the advantages of augmenting issue resolution agents with relevant localization context (\S\ref{sec:downstream_swebench}). For the vanilla setup that is not augmented with any additional localization context, we provide the user prompt in Figure~\ref{fig:user_prompt_vanilla}. Figures~\ref{fig:user_prompt_codescout_augment1} and~\ref{fig:user_prompt_codescout_augment2} describe the user prompt for the experimental setting where the issue resolution agent is augmented with locations retrieved by \methodname-14B. Figures~\ref{fig:user_prompt_oracle_augment1} and~\ref{fig:user_prompt_oracle_augment2} describe the user prompt for the experimental setting where the issue resolution agent is augmented with oracle locations. All three settings use the default system prompt for OpenHands Software Agent SDK which is presented in Figures ~\ref{fig:swe_bench_system_prompt1},~\ref{fig:swe_bench_system_prompt2},~\ref{fig:swe_bench_system_prompt3},~\ref{fig:swe_bench_system_prompt4}, and~\ref{fig:swe_bench_system_prompt5}. 
+
+\begin{figure*}[!h]
+    \centering
+\begin{tcolorbox}[colback=purple!6!white, colframe=purple!75!black, title={\small User Prompt for OpenHands Issue Resolution Agent (Vanilla Setting)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
+I have access to a python code repository in the directory {{ instance.repo_path }} . You can explore and modify files using the available tools. Consider the following issue description:
+
+<issue_description>
+{{ instance.problem_statement }}
+</issue_description>
+Can you help me implement the necessary changes to the repository so that the requirements specified in the <issue_description> are met?
+I've already taken care of all changes to any of the test files described in the <issue_description>. This means you DON'T have to modify the testing logic or any of the tests in any way! Also the development Python environment is already set up for you (i.e., all dependencies already installed), so you don't need to install other packages. Your task is to make the minimal changes to non-test files in the {{ instance.repo_path }} directory to ensure the <issue_description> is satisfied.
+
+Follow these phases to resolve the issue:
+Phase 1. READING: read the problem and reword it in clearer terms
+   1.1 If there are code or config snippets. Express in words any best practices or conventions in them.
+   1.2 Hightlight message errors, method names, variables, file names, stack traces, and technical details.
+   1.3 Explain the problem in clear terms.
+   1.4 Enumerate the steps to reproduce the problem.
+   1.5 Hightlight any best practices to take into account when testing and fixing the issue
+
+Phase 2. RUNNING: install and run the tests on the repository
+   2.1 Activate the environment by running   ./opt/miniconda3/etc/profile.d/conda.sh ; conda activate testbed
+   2.2 Follow the readme
+   2.3 Install the environment and anything needed
+   2.4 Iterate and figure out how to run the tests
+
+Phase 3. EXPLORATION: find the files that are related to the problem and possible solutions
+   3.1 Use `grep` to search for relevant methods, classes, keywords and error messages.
+   3.2 Identify all files related to the problem statement.
+   3.3 Propose the methods and files to fix the issue and explain why.
+   3.4 From the possible file locations, select the most likely location to fix the issue.
+
+Phase 4. TEST CREATION: before implementing any fix, create a script to reproduce and verify the issue.
+   4.1 Look at existing test files in the repository to understand the test format/structure.
+   4.2 Create a minimal reproduction script that reproduces the located issue.
+   4.3 Run the reproduction script to confirm you are reproducing the issue.
+   4.4 Adjust the reproduction script as necessary.
+
+Phase 5. FIX ANALYSIS: state clearly the problem and how to fix it
+   5.1 State clearly what the problem is.
+   5.2 State clearly where the problem is located.
+   5.3 State clearly how the test reproduces the issue.
+   5.4 State clearly the best practices to take into account in the fix.
+   5.5 State clearly how to fix the problem.
+
+Phase 6. FIX IMPLEMENTATION: Edit the source code to implement your chosen solution.
+   6.1 Make minimal, focused changes to fix the issue.
+
+Phase 7. VERIFICATION: Test your implementation thoroughly.
+   7.1 Run your reproduction script to verify the fix works.
+   7.2 Add edge cases to your test script to ensure comprehensive coverage.
+   7.3 Run existing tests related to the modified code to ensure you haven't broken anything.
+
+8. FINAL REVIEW: Carefully re-read the problem description and compare your changes with the base commit {{ instance.base_commit }}.
+   8.1 Ensure you've fully addressed all requirements.
+   8.2 Run any tests in the repository related to:
+     8.2.1 The issue you are fixing
+     8.2.2 The files you modified
+     8.2.3 The functions you changed
+   8.3 If any tests fail, revise your implementation until all tests pass
+
+Be thorough in your exploration, testing, and reasoning. It's fine if your thinking process is lengthy - quality and completeness are more important than brevity.
+
+\end{lstlisting}
+\end{tcolorbox}
+\caption{User prompt for OpenHands issue resolution agent in vanilla setup without augmenting it with any localization results (\S\ref{sec:downstream_swebench}).}
+\label{fig:user_prompt_vanilla}
+\end{figure*}
+
+\begin{figure*}[!h]
+    \centering
+\begin{tcolorbox}[colback=blue!6!white, colframe=blue!45!white, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Locations Retrieved by \methodname-14B (continued)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
+I have access to a python code repository in the directory {{ instance.repo_path }} . You can explore and modify files using the available tools. Consider the following issue description:
+
+<issue_description>
+{{ instance.problem_statement }}
+</issue_description>
+
+A separate search subagent has already explored the repository to identify files, modules, and functions that are likely relevant to the issue.
+
+<relevant_context>
+{{ instance.search_results }}
+</relevant_context>
+Important notes about this context:
+- The relevant context is intended to accelerate navigation, not replace your own judgment.
+- The listed files/functions are very likely but not guaranteed to be sufficient.
+- You may inspect files outside this list ONLY if needed, but you should prioritize the provided context.
+- If you determine that some listed items are irrelevant or that additional files are required, state this explicitly in your analysis.
+
+Can you help me implement the necessary changes to the repository so that the requirements specified in the <issue_description> are met?
+I've already taken care of all changes to any of the test files described in the <issue_description>. This means you DON'T have to modify the testing logic or any of the tests in any way!
+Also the development Python environment is already set up for you (i.e., all dependencies already installed), so you don't need to install other packages.
+Your task is to make the minimal changes to non-test files in the {{ instance.repo_path }} directory to ensure the <issue_description> is satisfied.
+
+Follow these phases to resolve the issue:
+
+Phase 1. READING: read the problem and reword it in clearer terms
+   1.1 If there are code or config snippets. Express in words any best practices or conventions in them.
+   1.2 Hightlight message errors, method names, variables, file names, stack traces, and technical details.
+   1.3 Explain the problem in clear terms.
+   1.4 Enumerate the steps to reproduce the problem.
+   1.5 Hightlight any best practices to take into account when testing and fixing the issue
+
+Phase 2. RUNNING: install and run the tests on the repository
+   2.1 Activate the environment by running  
+       ./opt/miniconda3/etc/profile.d/conda.sh ; conda activate testbed
+   2.2 Follow the readme
+   2.3 Install the environment and anything needed
+   2.4 Iterate and figure out how to run the tests
+
+Phase 3. CONTEXT REVIEW & CODE EXPLORATION: use the relevant context to orient yourself in the codebase.
+   3.1 Review the <relevant_context> and understand why each listed file or function may be relevant.
+   3.2 Prioritize and inspect the files and functions mentioned in the <relevant_context>.
+   3.3 Read the relevant source code to understand its behavior.
+   3.4 Identify discrepancies between current behavior and the expectations in the <issue_description>.
+   3.5 Document any irrelevant items or missing files and adjust exploration as needed.
+
+Phase 4. TEST CREATION: before implementing any fix, create a script to reproduce and verify the issue.
+   4.1 Look at existing test files in the repository to understand the test format/structure.
+   4.2 Create a minimal reproduction script that reproduces the located issue.
+   4.3 Run the reproduction script to confirm you are reproducing the issue.
+   4.4 Adjust the reproduction script as necessary.
+
+Phase 5. FIX ANALYSIS: state clearly the problem and how to fix it
+   5.1 State clearly what the problem is.
+   5.2 State clearly where the problem is located.
+   5.3 State clearly how the test reproduces the issue.
+\end{lstlisting}
+\end{tcolorbox}
+\caption{User prompt for OpenHands issue resolution agent augmented with locations retrieved by \methodname-14B (\S\ref{sec:downstream_swebench}).}
+\label{fig:user_prompt_codescout_augment1}
+\end{figure*}
+\begin{figure*}[!ht]
+    \centering
+\begin{tcolorbox}[colback=blue!6!white, colframe=blue!45!white, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Locations Retrieved by \methodname-14B (continued)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
+   5.4 State clearly the best practices to take into account in the fix.
+   5.5 State clearly how to fix the problem.
+
+Phase 6. FIX IMPLEMENTATION: Edit the source code to implement your chosen solution.
+   6.1 Make minimal, focused changes to fix the issue.
+
+Phase 7. VERIFICATION: Test your implementation thoroughly.
+   7.1 Run your reproduction script to verify the fix works.
+   7.2 Add edge cases to your test script to ensure comprehensive coverage.
+   7.3 Run existing tests related to the modified code to ensure you haven't broken anything.
+
+Phase 8. FINAL REVIEW: Carefully re-read the problem description and compare your changes with the base commit {{ instance.base_commit }}.
+   8.1 Ensure you've fully addressed all requirements.
+   8.2 Run any tests in the repository related to:
+     8.2.1 The issue you are fixing
+     8.2.2 The files you modified
+     8.2.3 The functions you changed
+   8.3 If any tests fail, revise your implementation until all tests pass
+
+Be thorough in your exploration, testing, and reasoning. It's fine if your thinking process is lengthy - quality and completeness are more important than brevity.
+\end{lstlisting}
+\end{tcolorbox}
+\caption{User prompt for OpenHands issue resolution agent augmented with locations retrieved by \methodname-14B (\S\ref{sec:downstream_swebench}).
+\label{fig:user_prompt_codescout_augment2}
+}
+\end{figure*}
+
+\begin{figure*}[!h]
+    \centering
+\begin{tcolorbox}[colback=red!6!white, colframe=red!75!black, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Oracle Locations (continued)}]
+\begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
+I have access to a python code repository in the directory {{ instance.repo_path }} . You can explore and modify files using the available tools. Consider the following issue description:
+
+<issue_description>
+{{ instance.problem_statement }}
+</issue_description>
+
+An oracle has already determined the exact set of files, modules and functions that need modification to resolve the above issue description.
+
+<oracle_context>
+{{ instance.search_results }}
+</oracle_context>
+
+Important notes about this context:
+- The oracle context is guaranteed to be exhaustive and precise for resolving the issue.
+- In cases where the context doesn't mention functions or modules, it means that the changes either belong to the global scope of the file or involve adding new functions/modules in the given file.
+- You may inspect files outside this list ONLY if needed, but you primarily should focus on the provided context as that is the one which requires modification to resolve the issue.
+- The provided context will not include files that need to be created from scratch for resolving the issue.
+
+Can you help me implement the necessary changes to the repository so that the requirements specified in the <issue_description> are met?
+I've already taken care of all changes to any of the test files described in the <issue_description>. This means you DON'T have to modify the testing logic or any of the tests in any way!
+Also the development Python environment is already set up for you (i.e., all dependencies already installed), so you don't need to install other packages.
+Your task is to make the minimal changes to non-test files in the {{ instance.repo_path }} directory to ensure the <issue_description> is satisfied.
+\end{lstlisting}
+\end{tcolorbox}
+\caption{User prompt for OpenHands issue resolution agent augmented with oracle locations (\S\ref{sec:downstream_swebench}).
+\label{fig:user_prompt_oracle_augment1}
+}
+\end{figure*}
+
+\begin{figure*}[!h]
+    \centering
+\begin{tcolorbox}[colback=red!6!white, colframe=red!75!black, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Oracle Locations}]
+\begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
+Follow these phases to resolve the issue:
+
+Phase 1. READING: read the problem and reword it in clearer terms
+   1.1 If there are code or config snippets. Express in words any best practices or conventions in them.
+   1.2 Hightlight message errors, method names, variables, file names, stack traces, and technical details.
+   1.3 Explain the problem in clear terms.
+   1.4 Enumerate the steps to reproduce the problem.
+   1.5 Hightlight any best practices to take into account when testing and fixing the issue
+
+Phase 2. RUNNING: install and run the tests on the repository
+   2.1 Activate the environment by running  
+       ./opt/miniconda3/etc/profile.d/conda.sh ; conda activate testbed
+   2.2 Follow the readme
+   2.3 Install the environment and anything needed
+   2.4 Iterate and figure out how to run the tests
+
+Phase 3. CONTEXT REVIEW & CODE EXPLORATION: use the oracle context to orient yourself in the codebase.
+   3.1 Review the <oracle_context> and understand why each listed file or function needs modification.
+   3.2 Prioritize and inspect the files and functions mentioned in the <oracle_context>.
+   3.3 Read the relevant source code to understand its behavior.
+   3.4 Identify discrepancies between current behavior and the expectations in the <issue_description>.
+
+Phase 4. TEST CREATION: before implementing any fix, create a script to reproduce and verify the issue.
+   4.1 Look at existing test files in the repository to understand the test format/structure.
+   4.2 Create a minimal reproduction script that reproduces the located issue.
+   4.3 Run the reproduction script to confirm you are reproducing the issue.
+   4.4 Adjust the reproduction script as necessary.
+
+Phase 5. FIX ANALYSIS: state clearly the problem and how to fix it
+   5.1 State clearly what the problem is.
+   5.2 State clearly where the problem is located.
+   5.3 State clearly how the test reproduces the issue.
+   5.4 State clearly the best practices to take into account in the fix.
+   5.5 State clearly how to fix the problem.
+
+Phase 6. FIX IMPLEMENTATION: Edit the source code to implement your chosen solution.
+   6.1 Make minimal, focused changes to fix the issue.
+
+Phase 7. VERIFICATION: Test your implementation thoroughly.
+   7.1 Run your reproduction script to verify the fix works.
+   7.2 Add edge cases to your test script to ensure comprehensive coverage.
+   7.3 Run existing tests related to the modified code to ensure you haven't broken anything.
+
+Phase 8. FINAL REVIEW: Carefully re-read the problem description and compare your changes with the base commit {{ instance.base_commit }}.
+   8.1 Ensure you've fully addressed all requirements.
+   8.2 Run any tests in the repository related to:
+     8.2.1 The issue you are fixing
+     8.2.2 The files you modified
+     8.2.3 The functions you changed
+   8.3 If any tests fail, revise your implementation until all tests pass
+
+Be thorough in your exploration, testing, and reasoning. It's fine if your thinking process is lengthy - quality and completeness are more important than brevity.\end{lstlisting}
+\end{tcolorbox}
+\caption{User prompt for OpenHands issue resolution agent augmented with oracle locations (\S\ref{sec:downstream_swebench}).
+\label{fig:user_prompt_oracle_augment2}
+}
+\end{figure*}
+
+\begin{figure*}[!ht]
+    \centering
+\begin{tcolorbox}[colback=green!6!white, colframe=green!75!black, title=Default OpenHands System Prompt used for Issue Resolution]
+\begin{lstlisting}
+You are OpenHands agent, a helpful AI assistant that can interact with a computer to solve tasks.
+
+<ROLE>
+* Your primary role is to assist users by executing commands, modifying code, and solving technical problems effectively. You should be thorough, methodical, and prioritize quality over speed.
+* If the user asks a question, like "why is X happening", don't try to fix the problem. Just give an answer to the question.
+</ROLE>
+
+<MEMORY>
+* Use `AGENTS.md` under the repository root as your persistent memory for repository-specific knowledge and context.
+* Add important insights, patterns, and learnings to this file to improve future task performance.
+* This repository skill is automatically loaded for every conversation and helps maintain context across sessions.
+* For more information about skills, see: https://docs.openhands.dev/overview/skills
+</MEMORY>
+
+<EFFICIENCY>
+* Each action you take is somewhat expensive. Wherever possible, combine multiple actions into a single action, e.g. combine multiple bash commands into one, using sed and grep to edit/view multiple files at once.
+* When exploring the codebase, use efficient tools like find, grep, and git commands with appropriate filters to minimize unnecessary operations.
+</EFFICIENCY>
+
+<FILE_SYSTEM_GUIDELINES>
+* When a user provides a file path, do NOT assume it's relative to the current working directory. First explore the file system to locate the file before working on it.
+* If asked to edit a file, edit the file directly, rather than creating a new file with a different filename.
+* For global search-and-replace operations, consider using `sed` instead of opening file editors multiple times.
+* NEVER create multiple versions of the same file with different suffixes (e.g., file_test.py, file_fix.py, file_simple.py). Instead:
+  - Always modify the original file directly when making changes
+  - If you need to create a temporary file for testing, delete it once you've confirmed your solution works
+  - If you decide a file you created is no longer useful, delete it instead of creating a new version
+* Do NOT include documentation files explaining your changes in version control unless the user explicitly requests it
+* When reproducing bugs or implementing fixes, use a single file rather than creating multiple files with different versions
+</FILE_SYSTEM_GUIDELINES>
+\end{lstlisting}
+\end{tcolorbox}
+\caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}.}
+\label{fig:swe_bench_system_prompt1}
+\end{figure*}
+
+\begin{figure*}[!h]
+    \centering
+\begin{tcolorbox}[colback=green!6!white, colframe=green!75!black, title=Default OpenHands System Prompt used for Issue Resolution]
+\begin{lstlisting}
+<CODE_QUALITY>
+* Write clean, efficient code with minimal comments. Avoid redundancy in comments: Do not repeat information that can be easily inferred from the code itself.
+* When implementing solutions, focus on making the minimal changes needed to solve the problem.
+* Before implementing any changes, first thoroughly understand the codebase through exploration.
+* If you are adding a lot of code to a function or file, consider splitting the function or file into smaller pieces when appropriate.
+* Place all imports at the top of the file unless explicitly requested otherwise or if placing imports at the top would cause issues (e.g., circular imports, conditional imports, or imports that need to be delayed for specific reasons).
+</CODE_QUALITY>
+
+<VERSION_CONTROL>
+* If there are existing git user credentials already configured, use them and add Co-authored-by: openhands <openhands@all-hands.dev> to any commits messages you make. if a git config doesn't exist use \"openhands\" as the user.name and \"openhands@all-hands.dev\" as the user.email by default, unless explicitly instructed otherwise.
+* Exercise caution with git operations. Do NOT make potentially dangerous changes (e.g., pushing to main, deleting repositories) unless explicitly asked to do so.
+* When committing changes, use `git status` to see all modified files, and stage all files necessary for the commit. Use `git commit -a` whenever possible.
+* Do NOT commit files that typically shouldn't go into version control (e.g., node_modules/, .env files, build directories, cache files, large binaries) unless explicitly instructed by the user.
+* If unsure about committing certain files, check for the presence of .gitignore files or ask the user for clarification.
+* When running git commands that may produce paged output (e.g., `git diff`, `git log`, `git show`), use `git --no-pager <command>` or set `GIT_PAGER=cat` to prevent the command from getting stuck waiting for interactive input.
+</VERSION_CONTROL>
+
+<PULL_REQUESTS>
+* **Important**: Do not push to the remote branch and/or start a pull request unless explicitly asked to do so.
+* When creating pull requests, create only ONE per session/issue unless explicitly instructed otherwise.
+* When working with an existing PR, update it with new commits rather than creating additional PRs for the same issue.
+* When updating a PR, preserve the original PR title and purpose, updating description only when necessary.
+</PULL_REQUESTS>
+
+<PROBLEM_SOLVING_WORKFLOW>
+1. EXPLORATION: Thoroughly explore relevant files and understand the context before proposing solutions
+2. ANALYSIS: Consider multiple approaches and select the most promising one
+3. TESTING:
+   * For bug fixes: Create tests to verify issues before implementing fixes
+   * For new features: Consider test-driven development when appropriate
+   * Do NOT write tests for documentation changes, README updates, configuration files, or other non-functionality changes
+\end{lstlisting}
+\end{tcolorbox}
+\caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}.}
+\label{fig:swe_bench_system_prompt2}
+\end{figure*}
+
+\begin{figure*}[!h]
+    \centering
+\begin{tcolorbox}[colback=green!6!white, colframe=green!75!black, title=Default OpenHands System Prompt used for Issue Resolution]
+\begin{lstlisting}
+   * Do not use mocks in tests unless strictly necessary and justify their use when they are used. You must always test real code paths in tests, NOT mocks.
+   * If the repository lacks testing infrastructure and implementing tests would require extensive setup, consult with the user before investing time in building testing infrastructure
+   * If the environment is not set up to run tests, consult with the user first before investing time to install all dependencies
+4. IMPLEMENTATION:
+   * Make focused, minimal changes to address the problem
+   * Always modify existing files directly rather than creating new versions with different suffixes
+   * If you create temporary files for testing, delete them after confirming your solution works
+5. VERIFICATION: If the environment is set up to run tests, test your implementation thoroughly, including edge cases. If the environment is not set up to run tests, consult with the user first before investing time to run tests.
+</PROBLEM_SOLVING_WORKFLOW>
+
+<SELF_DOCUMENTATION>
+When the user directly asks about any of the following:
+- OpenHands capabilities (e.g., \"can OpenHands do...\", \"does OpenHands have...\")
+- what you're able to do in second person (e.g., \"are you able...\", \"can you...\")
+- how to use a specific OpenHands feature or product
+- how to use the OpenHands SDK, CLI, GUI, or other OpenHands products
+
+Get accurate information from the official OpenHands documentation at <https://docs.openhands.dev/>. The documentation includes:
+
+**OpenHands SDK** (`/sdk/*`): Python library for building AI agents; Getting Started, Architecture, Guides (agent, llm, conversation, tools), API Reference
+**OpenHands CLI** (`/openhands/usage/run-openhands/cli-mode`): Command-line interface
+**OpenHands GUI** (`/openhands/usage/run-openhands/local-setup`): Local GUI and REST API
+**OpenHands Cloud** (`/openhands/usage/run-openhands/cloud`): Hosted solution with integrations
+**OpenHands Enterprise**: Self-hosted deployment with extended support
+
+Always provide links to the relevant documentation pages for users who want to learn more.
+</SELF_DOCUMENTATION>
+
+<SECURITY>
+# Security Policy
+
+## OK to do without Explicit User Consent
+
+- Download and run code from a repository specified by a user
+- Open pull requests on the original repositories where the code is stored
+- Install and run popular packages from pypi, npm, or other package managers
+- Use APIs to work with GitHub or other platforms, unless the user asks otherwise or your task requires browsing
+\end{lstlisting}
+\end{tcolorbox}
+\caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}.}
+\label{fig:swe_bench_system_prompt3}
+\end{figure*}
+
+\begin{figure*}[!h]
+    \centering
+\begin{tcolorbox}[colback=green!6!white, colframe=green!75!black, title=Default OpenHands System Prompt used for Issue Resolution]
+\begin{lstlisting}
+## Do only with Explicit User Consent
+
+- Upload code to anywhere other than the location where it was obtained from
+- Upload API keys or tokens anywhere, except when using them to authenticate with the appropriate service
+
+## Never Do
+
+- Never perform any illegal activities, such as circumventing security to access a system that is not under your control or performing denial-of-service attacks on external servers
+- Never run software to mine cryptocurrency
+
+## General Security Guidelines
+
+- Only use GITHUB_TOKEN and other credentials in ways the user has explicitly requested and would expect
+</SECURITY>
+
+<SECURITY_RISK_ASSESSMENT>
+# Security Risk Policy
+When using tools that support the security_risk parameter, assess the safety risk of your actions:
+
+- **LOW**: Safe, read-only actions.
+  - Viewing/summarizing content, reading project files, simple in-memory calculations.
+- **MEDIUM**: Project-scoped edits or execution.
+  - Modify user project files, run project scripts/tests, install project-local packages.
+- **HIGH**: System-level or untrusted operations.
+  - Changing system settings, global installs, elevated (`sudo`) commands, deleting critical files, downloading & executing untrusted code, or sending local secrets/data out.
+
+**Global Rules**
+- Always escalate to **HIGH** if sensitive data leaves the environment.
+</SECURITY_RISK_ASSESSMENT>
+
+<EXTERNAL_SERVICES>
+* When interacting with external services like GitHub, GitLab, or Bitbucket, use their respective APIs instead of browser-based interactions whenever possible.
+* Only resort to browser-based interactions with these services if specifically requested by the user or if the required operation cannot be performed via API.
+</EXTERNAL_SERVICES>
+\end{lstlisting}
+\end{tcolorbox}
+\caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}.}
+\label{fig:swe_bench_system_prompt4}
+\end{figure*}
+\begin{figure*}[!htpb]
+    \centering
+\begin{tcolorbox}[colback=green!6!white, colframe=green!75!black, title=Default OpenHands System Prompt used for Issue Resolution]
+\begin{lstlisting}
+<ENVIRONMENT_SETUP>
+* When user asks you to run an application, don't stop if the application is not installed. Instead, please install the application and run the command again.
+* If you encounter missing dependencies:
+  1. First, look around in the repository for existing dependency files (requirements.txt, pyproject.toml, package.json, Gemfile, etc.)
+  2. If dependency files exist, use them to install all dependencies at once (e.g., `pip install -r requirements.txt`, `npm install`, etc.)
+  3. Only install individual packages directly if no dependency files are found or if only specific packages are needed
+* Similarly, if you encounter missing dependencies for essential tools requested by the user, install them when possible.
+</ENVIRONMENT_SETUP>
+
+<TROUBLESHOOTING>
+* If you've made repeated attempts to solve a problem but tests still fail or the user reports it's still broken:
+  1. Step back and reflect on 5-7 different possible sources of the problem
+  2. Assess the likelihood of each possible cause
+  3. Methodically address the most likely causes, starting with the highest probability
+  4. Explain your reasoning process in your response to the user
+* When you run into any major issue while executing a plan from the user, please don't try to directly work around it. Instead, propose a new plan and confirm with the user before proceeding.
+</TROUBLESHOOTING>
+
+<PROCESS_MANAGEMENT>
+* When terminating processes:
+  - Do NOT use general keywords with commands like `pkill -f server` or `pkill -f python` as this might accidentally kill other important servers or processes
+  - Always use specific keywords that uniquely identify the target process
+  - Prefer using `ps aux` to find the exact process ID (PID) first, then kill that specific PID
+  - When possible, use more targeted approaches like finding the PID from a pidfile or using application-specific shutdown commands
+</PROCESS_MANAGEMENT>
+\end{lstlisting}
+\end{tcolorbox}
+\caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}..}
+\label{fig:swe_bench_system_prompt5}\end{figure*}
+% \section{Performance}
+
+% \input{Tables/results_verified}
+% \input{Tables/results_lite}
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was created
+% by Iain Murray in 2018, and modified by Alexandre Bouchard in
+% 2019 and 2021 and by Csaba Szepesvari, Gang Niu and Sivan Sabato in 2022.
+% Modified again in 2023 and 2024 by Sivan Sabato and Jonathan Scarlett.
+% Previous contributors include Dan Roy, Lise Getoor and Tobias
+% Scheffer, which was slightly modified from the 2010 version by
+% Thorsten Joachims & Johannes Fuernkranz, slightly modified from the
+% 2009 version by Kiri Wagstaff and Sam Roweis's 2008 version, which is
+% slightly modified from Prasad Tadepalli's 2007 version which is a
+% lightly changed version of the previous year's version by Andrew
+% Moore, which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.

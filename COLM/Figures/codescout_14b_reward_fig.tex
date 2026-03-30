@@ -1,0 +1,37 @@
+\begin{figure}[htbp]
+     \centering
+     % First Row
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Figures/codescout_14b/14B_all_reward_curve.pdf}
+         \caption{Aggregate reward vs. Training Step}
+         \label{fig:codescout_14b_avg}
+     \end{subfigure}
+     % \hfill
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Figures/codescout_14b/14B_file_reward_curve.pdf}
+         \caption{File-level F1 score vs. Training Step}
+         \label{fig:codescout_14b_file}
+     \end{subfigure}
+
+     \vspace{5pt} % Adds vertical space between the rows
+
+     % Second Row
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Figures/codescout_14b/14B_module_reward_curve.pdf}
+         \caption{Module-level F1 score vs. Training Step}
+         \label{fig:codescout_14b_module}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.49\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{Figures/codescout_14b/14B_function_reward_curve.pdf}
+         \caption{Function-level F1 score vs. Training Step}
+         \label{fig:codescout_14b_function}
+     \end{subfigure}
+     
+     \caption{Reward curves for RL training of \methodname-14B.}
+     \label{fig:codescout_14b_reward}
+\end{figure}

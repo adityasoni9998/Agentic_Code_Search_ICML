@@ -1,0 +1,78 @@
+\input{COLM/Tables/results_pro}
+\input{Tables/results_lite}
+\section{Results}\label{sec:results}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=\linewidth]{Figures/comparison_chart.pdf}
+%     \caption{Performance gain averaged over 3 benchmarks; SWEBench-Lite, Verified, and Pro. \methodname effectively works for both 4B and 14B parameter models.}
+%     \label{fig:performance_gain}
+% \end{figure}
+
+This section describes the experimental results of \methodname and compares them with various competitive baselines (\S\ref{sec:baselines}). We present the summary of our results for all three benchmarks in Table \ref{tab:swe_bench_summary}. We also present detailed results for SWE-Bench Verified in Table \ref{tab:swe_bench_results}, SWE-Bench Pro in Table \ref{tab:swe_bench_pro_results}, and SWE-Bench Lite in Table \ref{tab:swe_bench_lite_results}. 
+
+Across all three evaluation benchmarks, \methodname models (using OpenHands-Bash) achieve superior or competitive performance over \textbf{8-18$\times$ larger} base and post-trained LLMs using various agent scaffolds. Moreover, \methodname often narrows the performance gap with, and sometimes even outperforms closed-source LLMs. We present key insights below and primarily compare methods using F1 score as it captures both precision and recall.
+
+\subsection{\methodname substantially outperforms base LLMs of similar and larger sizes with OpenHands-Bash}
+Across all evaluation benchmarks and localization granularities, \methodname LLMs \emph{significantly} outperform their corresponding base models when using the OpenHands-Bash scaffold. \methodname-1.7B achieves absolute improvements in F1 score over its base model of \textbf{40-54\%} at the file level, \textbf{25-41\%} at the module level, and \textbf{18-28\%} at the function level. Similarly, \methodname-4B yields absolute gains of \textbf{14-19\%}, \textbf{25-38\%}, and \textbf{21-31\%} in file, module, and function-level F1 scores, respectively. Finally, \methodname-14B achieves substantial absolute improvements of \textbf{23-34\%} in file-level F1, \textbf{25-39\%} in module-level F1, and \textbf{20-33\%} in function-level F1 scores.
+
+Secondly, \methodname models demonstrate exceptional parameter efficiency and consistently outperform significantly larger base LLMs using the OpenHands-Bash scaffold. \methodname-1.7B outperforms the \textbf{8$\times$} larger Qwen3-14B with absolute gains in F1 score of \textbf{11-18\%} for files, \textbf{13-21\%} for modules, and \textbf{10-15\%} for functions. When compared against the \textbf{18$\times$} larger Qwen3-32B (Thinking) model, \methodname-1.7B remains competitive, surpassing its F1 score by \textbf{2-4\%} and \textbf{3-6\%} for modules and functions respectively, while trailing by \textbf{2-7\%} for files. \methodname-4B consistently outperforms \textbf{8$\times$} larger Qwen3-32B for all benchmarks, with absolute improvements in F1 score of \textbf{5-8\%}, \textbf{11-16\%}, and \textbf{13-17\%} for files, modules, and functions respectively. Finally, \methodname-14B further widens the gap over Qwen3-32B, surpassing its F1 scores by \textbf{6-13\%} for files, \textbf{15-22\%} for modules, and \textbf{16-21\%} for functions.
+
+\subsection{\methodname outperforms larger base and post-trained LLMs using complex scaffolds}
+
+\methodname demonstrates superior or competitive performance over larger base and post-trained LLMs that utilize complex specialized scaffolds.
+
+\textbf{Comparisons with larger base LLMs using complex scaffolds:} \methodname models consistently outperform Qwen2.5-32B-Instruct with the OrcaLoca scaffold~\citep{yu2025orcalocallmagentframework} on SWE-Bench Verified. \methodname-4B and \methodname-14B \emph{significantly} exceed its F1 scores by \textbf{10\%} for files and \textbf{8-11\%} for functions. Impressively, our \textbf{18$\times$ smaller} \methodname-1.7B remains  competitive, trailing Qwen2.5-32B with OrcaLoca by \textbf{$<$ 0.5\%} in function-level F1 and by \textbf{2.65\%} in file-level F1. On SWE-bench Pro, \methodname models exhibit more pronounced gains over Qwen2.5-32B-Instruct with the CoSIL scaffold~\citep{jiang2025issuelocalizationllmdriveniterative}. \methodname-1.7B, 4B, and 14B achieve absolute F1 gains of \textbf{20-33\%} for files and \textbf{11-21\%} for functions. 
+
+% While CoSIL achieves much better recall over precision, we still observe that \methodname models have upto \textbf{9\%} better function-level recall. Moreover, the file-level recall of \methodname-14B is similar to CoSIL, while \methodname-4B trails by less than \textbf{3\%}.
+
+
+\textbf{Comparisons with larger post-trained LLMs using complex scaffolds:} We primarily compare \methodname with RepoNavigator~\citep{zhang2025one} as it is our strongest post-training baseline. It is also closer to our work than  RepoSearcher~\citep{ma2025toolintegratedreinforcementlearningrepo} as it is trained without relying on closed-source LLMs and can predict a variable number of locations (\S\ref{sec:baselines}).
+
+For both SWE-bench Verified and Pro, \methodname models frequently achieve superior or competitive performance over \textbf{3-8$\times$ larger} RepoNavigator models. For both benchmarks, \methodname-1.7B achieves slightly better performance than RepoNavigator-7B  with a \textbf{1-4\%} higher F1 score for both files and functions. Furthermore, \methodname-4B consistently exceeds the performance of RepoNavigator-14B across both benchmarks, with absolute F1 improvements of \textbf{2-10\%} for files and \textbf{8-11\%} for functions. Comparison with RepoNavigator-32B reveals distinct trends across benchmarks. On SWE-bench Verified, \methodname-4B and \methodname-14B achieve better function-level F1 by \textbf{3-6\%} with a very similar file-level F1. On SWE-bench Pro, \methodname-4B and \methodname-14B outperform RepoNavigator-32B by \textbf{8\%} in function-level F1, whereas the 32B baseline has \textbf{4-6\%} better file-level F1 scores.
+
+\subsection{\methodname narrows the performance gap with Closed-Source LLMs}
+On SWE-bench Verified, \methodname-4B and \methodname-14B achieve superior results compared to GPT-5-Chat with RepoNavigator, outperforming it by \textbf{9\%} in file-level F1 and \textbf{5-9\%} in function-level F1. Moreover, \methodname-4B and \methodname-14B achieve impressive function-level localization performance surpassing the function-level F1 score of Claude-3.7-Sonnet with RepoNavigator by \textbf{5-8\%}. These results are significant given that \methodname uses a bash-only agent as opposed to the specialized RepoNavigator scaffold.
+
+Interestingly, Claude-Sonnet-4.5 achieves stronger performance with our bash-only agent over RepoNavigator, with significant improvement in function-level F1 score by \textbf{18\%} and a slightly better file-level F1 score (2\%). Similarly GPT-5 with our agent outperforms Claude 3.7 Sonnet with the RepoNavigator scaffold, with absolute improvements in F1 of \textbf{23\%} for functions and \textbf{5\%} for files. These results suggest that designing specialized scaffolds may not always lead to better performance with frontier models and can even degrade model performance. Prior agent frameworks like OpenHands-Versa \citep{soni2025codingagentsmultimodalbrowsing} and mini SWE-Agent~\citep{mini_swe_agent_repo,yang2024sweagentagentcomputerinterfacesenable} have reported similar findings for other task domains.
+
+For all benchmarks, GPT-5 and Claude-Sonnet-4.5 consistently outperform \methodname when using the OpenHands-Bash scaffold with an additional reminder (\S\ref{sec:baselines}). A surprising finding is the sensitivity of these frontier LLMs to prompt engineering; without the additional reminder for prediction submission, the performance of both models drops to almost \textbf{zero} on all benchmarks. Interestingly, our preliminary experiments do not reveal similar problems with GPT-4o despite being an older proprietary LLM.
+% \subsection{\methodname closes the performance gap with closed-source LLMs}Surprisingly, using a fully open-source pipeline, \methodname competes strongly against proprietary models. On SWE-Bench Verified (Table \ref{tab:swe_bench_results}), our models achieve substantial absolute gains in function-level localization. \methodname-14B exceeds the RepoNavigator scaffold powered by Claude-3.7-Sonnet and GPT-5-Chat by \textbf{8.6\%} and \textbf{9.15\%} in F1 scores respectively. Even \methodname-4B surpasses Claude-3.7-Sonnet by \textbf{5.1\%} and GPT-5 by \textbf{5.06\%} in function-level F1 scores. While the closed-source LLMs from the Claude family still outperform \methodname in terms of file-level localization, GPT-5-Chat significantly under-performs our models by \textbf{9.69\%} highlighting the competitiveness of our approach. 
+
+
+% % \textbf{Function}
+% \methodname for both 4B and 14B sizes perform at a much higher F1 level on all three SWE-tasks. Notably, while lagging behind RepoNavigator-32B on file-level F1, \methodname achieves higher function-level F1
+
+% \subsection{}
+
+
+% \autoref{tab:swe_bench_pro_results} presents the performance of various scaffolds and language models on the code localization task across three granularity levels. The baseline approaches; Agentless, CoSIL~\cite{}, LocAgent~\cite{}, and RepoSearcher~\cite{} using Qwen2.5-32B exhibit a pattern of high recall and poor precision at the file and function level. This suggests systematic over-retrieval, where models identify many candidate files but lack the discriminative capability to filter irrelevant results. 
+
+% % In contrast, 
+
+% The introduction of reinforcement learning-based training yields substantial improvements with approaches such as RepoNavigator~\cite{zhang2026toolenoughreinforcementlearning} with GRPO result in both higher precision and recall.
+
+% \methodname models within the OpenHands framework, which achieve competitive results with significantly fewer parameters. CS-OSS-4B reaches 51.77 F1 at the file level and 29.03 F1 at the function level—the latter representing a 136% improvement over the untrained Qwen3-32B-think model (12.31 F1) despite being 8× smaller.
+% The performance gap between trained and untrained models widens progressively at finer granularities. At the function level, where precise localization is most challenging, GSPO-trained models achieve F1 scores of 28.74–29.03 compared to 7.67–12.31 for untrained approaches. This disparity suggests that specialized training is essential for capturing fine-grained code structure and semantic relationships. Furthermore, the diminishing returns observed between CS-OSS-4B and CS-OSS-14B (29.03 vs. 28.74 function-level F1) indicate that GSPO training enables efficient utilization of model capacity, achieving near-optimal performance at smaller scales. 
+
+% \subsection{\methodname as a Well-Rounded Code-Searcher}
+
+
+
+
+
+% \subsection{\methodname Improves Downstream Performance on SWE-tasks}
+
+% We further investigate how well \methodname aids in actual SWE tasks. To do this, we append CS-OSS prediction to the user message for another agent. We evaluate Qwen3-8B with on 100 samples of SWE-Bench Verified. Initially, Qwen3-8B has poor performance with only X\% resolve rate. However, when using \methodname, we observe a performance increase of X\%. 
+
+% \section{Analysis}
+% \subsection{Improve Swe-Bench scores}
+
+% \sonicomment{Sanidhya hasn't been able to run this for us - I can try doing this but prioritizing other stuff first}
+% Eval both the 14b and 4b.
+% Model: neulab/cso-q3-14b-32x4-swe_smith-multilevel_f1_minimum-custom_tool-300
+% Try 50steps, 250, the standard is 500 steps?
+% Local Model: 32B-Coder?
+% Seed-OSS 36B? Do a sample of 100 samples. 
+
+
+% \sonicomment{I don't think Sriraam is available to write this for us, we need to do this as well!}
