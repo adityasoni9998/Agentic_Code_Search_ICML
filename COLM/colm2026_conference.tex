@@ -98,7 +98,8 @@ Address \\
 
 \newcommand{\fix}{\marginpar{FIX}}
 \newcommand{\new}{\marginpar{NEW}}
-
+\newcommand{\cmark}{\textcolor{green!80!black}{\ding{51}}}
+\newcommand{\xmark}{\textcolor{red!80!black}{\ding{55}}}
 \begin{document}
 
 \ifcolmsubmission
@@ -124,6 +125,7 @@ Address \\
 % Use unnumbered first level headings for the acknowledgments. All
 % acknowledgments, including those to funding agencies, go at the end of the paper.
 
+\newpage
 \section*{Ethics Statement}
 
 Our work studies how to train language models to perform repository-level code localization, a key capability underlying many coding agent tasks like automated issue resolution. Advances in code localization will help strengthen automated software engineering systems that rely on accurate code retrieval. Progress in coding agents has significant societal implications as they can reshape the software engineering profession, reducing the demand for certain types of routine programming tasks contributing towards workforce displacement. We advocate for the responsible development and deployment of coding agents, with appropriate safeguards and human oversight to mitigate real-world harm.

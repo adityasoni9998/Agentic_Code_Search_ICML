@@ -1,11 +1,36 @@
 \section{Related Work}
 \label{sec:background}
-Prior work on code localization has proposed specialized agent frameworks and trained open-source LLMs for this task. Table~\ref{tab:baseline_comparison} includes comparison of prior approaches with ours. A key limitation of existing methods is that they are restricted to a single programming language, typically Python, due to reliance on language-specific static analysis tools, like AST parsers. Thus, extending these methods to other languages  requires additional engineering efforts. LocAgent~\citep{chen-etal-2025-locagent} and OrcaLoca~\citep{yu2025orcalocallmagentframework} use language-specific parsers to construct code graphs that capture hierarchical dependencies, requiring expensive pre-indexing. CoSIL~\citep{jiang2025issuelocalizationllmdriveniterative} dynamically builds module-call graphs to capture ``import'' relationships and function-call graphs to capture ``invoke'' and ``inherit'' relationships. RepoSearcher~\citep{ma2025toolintegratedreinforcementlearningrepo} uses specialized retrieval tools, for example to extract imports or search for functions in a class. While CoSIL and RepoSearcher avoid pre-indexing, they still depend on language-specific static analysis to construct call graphs or implement special tools. RepoNavigator~\citep{zhang2025one} uses a ``jump'' tool that resolves Python symbol definitions using a language server built using static analysis tools like AST and dependency graphs. In contrast, our work uses an agent that relies \emph{solely} on a terminal for localization, making it inherently programming language-agnostic by design.
+Prior work proposes specialized agents and trains open-source LLMs for code localization (\autoref{tab:baseline_comparison}), but is often limited to a single programming language (typically Python) due to reliance on static analysis tools (e.g., AST parsers). Extending them to other languages requires additional engineering effort. LocAgent~\citep{chen-etal-2025-locagent} and OrcaLoca~\citep{ yu2025orcalocallmagentframework} construct code graphs to capture hierarchical dependencies, requiring expensive pre-indexing.
+\begin{wraptable}{r}{0.5\columnwidth}
+    \centering
+    \vspace{-7pt} % Adjust to align with the top of the adjacent text
+    \resizebox{0.5\columnwidth}{!}{%
+        \begin{tabular}{lccc}
+            \toprule
+            \textbf{Method} & 
+            \textbf{\begin{tabular}[c]{@{}c@{}}Language-Agnostic\\Scaffold\end{tabular}} & 
+            \textbf{\begin{tabular}[c]{@{}c@{}}Pure RL\\post-training\end{tabular}} & 
+            \textbf{\# Tools} \\ 
+            \midrule
+            LocAgent \citep{chen-etal-2025-locagent}      & \xmark & \xmark & 3 \\
+            CoSiL \citep{jiang2025issuelocalizationllmdriveniterative} & \xmark & \xmark & 3 \\
+            OrcaLoca \citep{yu2025orcalocallmagentframework} & \xmark & \xmark & 5 \\
+            RepoSearcher \citep{ma2025toolintegratedreinforcementlearningrepo} & \xmark & \xmark & 5 \\
+            RepoNavigator \citep{zhang2025one}            & \xmark & \cmark & 1 \\
+            \textbf{\methodname} \textit{\textbf{(Ours)}} & \cmark & \cmark & 1 \\
+            \bottomrule
+        \end{tabular}
+    }
+    \caption{Comparison of code localization methods. \methodname is the only method that directly post-trains LLMs with RL using a programming language-agnostic scaffold equipped \emph{solely} with a bash terminal.}
+    \label{tab:baseline_comparison}
+    \vspace{-7pt}
+\end{wraptable}
+CoSIL~\citep{jiang2025issuelocalizationllmdriveniterative} dynamically builds module and function call graphs, and RepoSearcher~\citep{ma2025toolintegratedreinforcementlearningrepo} has specialized tools, for example to extract imports or search for methods in a class. While CoSIL and RepoSearcher avoid pre-indexing, they still require static analysis. RepoNavigator~\citep{zhang2025one} has a ``jump'' tool that resolves Python symbol definitions using a language server built using AST. Our agent \emph{solely} uses a terminal, making it inherently language-agnostic by design.
 
-\input{Tables/baseline_comparison}
-Unlike most prior methods, which either do not train LLMs using their proposed agent frameworks, such as CoSIL and OrcaLoca, or rely on supervised distillation from proprietary closed-source LLMs via rejection sampling fine-tuning~\citep{yuan2023scalingrelationshiplearningmathematical}, like LocAgent and RepoSearcher, \methodname post-trains LLMs directly with reinforcement learning, thereby eliminating dependence on expensive closed-source models for data curation.
+% \input{Tables/baseline_comparison}
+Most prior methods either do not train LLMs using their proposed agents, like CoSIL and OrcaLoca, or rely on supervised distillation from closed-source LLMs via rejection sampling fine-tuning~\citep{yuan2023scalingrelationshiplearningmathematical}, like LocAgent and RepoSearcher. \methodname trains LLMs directly with RL, removing dependence on expensive proprietary LLMs for data curation.
 
-Finally, \methodname has a \emph{significantly simpler} agent scaffold both in terms of both engineering overhead and tool count. Since the bash terminal is already a core component of standard coding agents like OpenHands~\citep{wang2025openhandssoftwareagentsdk}, SWE-Agent~\citep{yang2024sweagentagentcomputerinterfacesenable}, and Claude Code~\citep{anthropic_claude_code_2025}, our approach avoids the need to implement specialized task-specific tools or scaffolds, unlike prior work. Moreover, when measuring the size of the agent's action space, excluding any finish tools, \methodname uses only 1 tool, compared to 3-5 tools in prior work. Appendix~\ref{appendix:related_work_detailed} includes a more comprehensive review of prior work.
+Finally, \methodname has a \emph{significantly simpler} scaffold both in terms of both engineering overhead and tool count. Since the terminal is already a core component of standard coding agents ~\citep{wang2025openhandssoftwareagentsdk, yang2024sweagentagentcomputerinterfacesenable, anthropic_claude_code_2025}, we do not need to implement specialized task-specific tools or scaffolds, unlike prior work. Moreover, when comparing the size of the agent's action space, excluding any finish tools, \methodname has only 1 tool, compared to 3-5 tools in prior work. Appendix~\ref{appendix:related_work_detailed} includes a detailed review of prior work.
 % \gncomment{We need math here.}
 
 % Software engineering tasks often involve solving GitHub issues in a code repository. These issues describe the underlying problem in natural language and may also include code snippets to reproduce the bug and related error logs. Agents for automated issue resolution need to identify relevant locations from the code repository before editing the codebase to fix the issue. This process of finding parts of repository is called code-localization and is regarded as an essential pre-requisite step for the issue resolution task. 
