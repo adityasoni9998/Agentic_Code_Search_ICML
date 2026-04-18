@@ -3,23 +3,23 @@
 \renewcommand{\arraystretch}{2} % Adds vertical padding to rows
 \setlength{\tabcolsep}{3.5pt}
 \resizebox{\columnwidth}{!}{%
-\begin{tabular}{c|c|ccc} 
+\begin{tabular}{c|ccc} 
 \toprule
-\textbf{Benchmark} & \textbf{Reward} & \textbf{File F1} & \textbf{Module F1} & \textbf{Function F1} \\
+\textbf{Reward} & \textbf{File F1} & \textbf{Module F1} & \textbf{Function F1} \\
 \midrule
 
-% SWE-BENCH VERIFIED
-& $r^{\mathsf{turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & & & \\
-\multirow{-2}{*}{SWE-Bench Verified} & $r^{\mathsf{flex-turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & & & \\
-\midrule
+% % SWE-BENCH VERIFIED
+% & $r^{\mathsf{turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & & & \\
+% \multirow{-2}{*}{SWE-Bench Verified} & $r^{\mathsf{flex-turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & & & \\
+% \midrule
 
 % SWE-BENCH PRO
-& $r^{\mathsf{turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & & & \\
-\multirow{-2}{*}{SWE-Bench Pro} & $r^{\mathsf{flex-turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & & & \\
+$r^{\mathsf{turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & 51.37\% & 28.33\%& 18.95\%\\
+$r^{\mathsf{flex-turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & \textbf{55.25\%} & \textbf{31.17\%}& \textbf{22.45\%}\\
 
 \bottomrule
 \end{tabular}
 }
-\caption{Summary of evaluation results when training the 14B model with different choices of the auxiliary binary reward function for the turn-limit on SWE-Bench Verified and Pro.}
+\caption{Comparing localization performance on SWE-Bench Pro when training the 14B model with different choices of the auxiliary binary reward function for the turn-limit.}
 \label{tab:reward_function_comparison}
 \end{table*}
