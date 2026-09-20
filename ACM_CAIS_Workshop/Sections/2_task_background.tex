@@ -1,0 +1,23 @@
+\input{Tables/baseline_comparison}
+\section{Related Work}
+\label{sec:background}
+Prior work proposes specialized agents and trains open-source LLMs for code localization (Table~\ref{tab:baseline_comparison}), but is often limited to a single programming language (typically Python) due to reliance on static analysis tools (e.g., AST parsers). Extending them to other languages requires additional engineering effort. 
+
+LocAgent~\citep{chen-etal-2025-locagent} and OrcaLoca~\citep{ yu2025orcalocallmagentframework} construct code graphs to capture hierarchical dependencies, requiring expensive pre-indexing. CoSIL~\citep{jiang2025issuelocalizationllmdriveniterative} dynamically builds module and function call graphs, and RepoSearcher~\citep{ma2025toolintegratedreinforcementlearningrepo} has specialized tools, for example to extract imports or search for methods in a class. While CoSIL and RepoSearcher avoid pre-indexing, they still require static analysis. RepoNavigator~\citep{zhang2025one} has a ``jump'' tool that resolves Python symbol definitions using a language server built using AST. Our agent \emph{solely} uses a terminal, making it inherently language-agnostic by design.
+
+% \input{Tables/baseline_comparison}
+Most prior methods either do not train LLMs using their proposed agents, like CoSIL and OrcaLoca, or rely on supervised distillation from closed-source LLMs via rejection sampling fine-tuning~\citep{yuan2023scalingrelationshiplearningmathematical}, like LocAgent and RepoSearcher. \methodname trains LLMs directly with RL, removing dependence on expensive proprietary LLMs for data curation.
+
+Finally, \methodname has a \emph{significantly simpler} scaffold both in terms of both engineering overhead and tool count. Since bash terminal is already a core component of standard coding agents ~\citep{wang2025openhandssoftwareagentsdk, yang2024sweagentagentcomputerinterfacesenable, anthropic_claude_code_2025}, we do not need to implement specialized task-specific tools or scaffolds, unlike prior work. Moreover, when comparing the size of the agent's action space, excluding any finish tools, \methodname has only 1 tool, compared to 3-5 tools in prior work. Appendix~\ref{appendix:related_work_detailed} includes a detailed review of prior work.
+% \gncomment{We need math here.}
+
+% Software engineering tasks often involve solving GitHub issues in a code repository. These issues describe the underlying problem in natural language and may also include code snippets to reproduce the bug and related error logs. Agents for automated issue resolution need to identify relevant locations from the code repository before editing the codebase to fix the issue. This process of finding parts of repository is called code-localization and is regarded as an essential pre-requisite step for the issue resolution task. 
+
+% Formally, given an issue description regarding a bug or question related to a repository $x \in \mathcal{X}$, the task of code localization is to predict a set of relevant items $y \subset \mathcal{U}$ where $\mathcal{U}$ represents all possible sets of items (file name, modules, functions, or specific code lines). Such a system would be trained to maximize the Dice coefficient based on the target set $\hat{y} \subset \mathcal{U}$, $\text{Dice}(y, \hat{y}) = \frac{2 |y \cap \hat{y}|}{|y| + |\hat{y}|}$.
+% $y \sim f(x)$
+
+% In fact, tasks such as SWE-Bench~\cite{jimenez2024swebenchlanguagemodelsresolve} have early variants where the code-localization part has already been "solved" by including the relevant files in the prompt.
+% While various 
+% Traditional information retrieval methods often rely on heuristics such as semantic similarity between keywords and context. Agentic code-search systems, on the other hand, enable more targeted repository exploration via tool use.
+
+% In a code localization task, a system must return a set of relevant targets. These targets may have hierarchical attributes corresponding to the file, module/class, or function level (our work considers these three levels of granularity). Performance is measured using F1, which considers both precision and recall of the retrieval system.

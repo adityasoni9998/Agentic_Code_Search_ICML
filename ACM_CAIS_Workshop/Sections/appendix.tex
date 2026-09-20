@@ -1,5 +1,5 @@
 \appendix
-\onecolumn
+% \onecolumn
 % \section{Training Hyperparameters}
 % \input{Tables/train_hyperparams}
 
@@ -59,6 +59,7 @@ When you have identified all relevant locations, you MUST use the `localization_
 \end{lstlisting}
 \end{tcolorbox}
 \caption{System prompt for the OpenHands-Bash agent scaffold used by \methodname (continued on next page).}
+\Description{A blue-coloured box showing the system prompt for OpenHands-Bash.}
 \label{fig:system_prompt1}
 \end{figure*}
 
@@ -69,7 +70,6 @@ When you have identified all relevant locations, you MUST use the `localization_
 4. If the required modification belongs to a class (e.g. adding a new method to a class), provide the file path and class name.
 
 ## SEARCH STRATEGY
-
 1. **Initial Exploration**: Cast a wide net
    - Search for keywords, function names, class names
    - Check file names and directory structure
@@ -84,7 +84,6 @@ When you have identified all relevant locations, you MUST use the `localization_
    - Start eliminating false positives
 
 3. **Final Verification**: Confirm your location list and terminate execution by calling the `localization_finish` tool
-
 ## CRITICAL RULES
 - NEVER exceed 5 parallel bash tool calls in a single turn
 - ALWAYS use the `localization_finish` tool after identifying all relevant locations
@@ -95,7 +94,6 @@ When you have identified all relevant locations, you MUST use the `localization_
 - Return file paths as they appear in the repository. Do not begin the path with "./"
 - Aim for high precision (all files relevant) and high recall (no relevant files missed)
 - Class and function names are OPTIONAL - only include when changes are at that level
-
 ## EXAMPLE OUTPUT BEHAVIOUR
 Here are some examples of how to format your output when calling the `localization_finish` tool:
 - src/parsers/parser.py requires changes to imports, a function parse_data which belongs to the class DataParser, and another function __str__ inside the same class. This should be represented as three separate entries: one with just the file path and one each for the two functions parse_data and __str__ with file path, class name, and function name.
@@ -105,6 +103,7 @@ Here are some examples of how to format your output when calling the `localizati
 \end{lstlisting}
 \end{tcolorbox}
 \caption{System prompt for the OpenHands-Bash scaffold used by \methodname.}
+\Description{A blue-coloured box showing the system prompt for OpenHands-Bash.}
 \label{fig:system_prompt2}
 \end{figure*}
 
@@ -132,8 +131,9 @@ IMPORTANT: Your output MUST follow the below rules:
 \end{tcolorbox}
 \caption{User prompt for the OpenHands-Bash scaffold used by \methodname.}
 \label{fig:user_prompt}
+\Description{An orange-coloured box showing the user prompt for OpenHands-Bash.}
 \end{figure*}
-\input{COLM/Tables/tool_schema}
+\input{Tables/tool_schema}
 
 \section{Detailed experimental settings for training and evaluation}\label{appendix:experimental_setup}
 
@@ -152,12 +152,13 @@ This section describes the experimental setup for all the evaluation runs perfor
 \input{Figures/codescout_14b_reward_fig}
 \input{Figures/codescout_4b_reward_fig}
 \input{Figures/codescout_1.7b_reward_fig}
-\begin{wrapfigure}{r}{0.56\textwidth} % {r} for right side, 45% of text width
-    \centering
-    \includegraphics[width=0.56\textwidth]{Figures/codescout_1.7b/1.7B_sft_loss_curve.pdf} 
-    \caption{Training Loss curve during rejection sampling finetuning used to train \methodname-1.7B-RFT.}
-    \label{fig:codescout_1.7B_RFT}
-\end{wrapfigure}
+\input{Figures/codescout_1.7b_rft}
+% \begin{wrapfigure}{r}{0.56\textwidth} % {r} for right side, 45% of text width
+%     \centering
+%     \includegraphics[width=0.56\textwidth]{Figures/codescout_1.7b/1.7B_sft_loss_curve.pdf} 
+%     \caption{Training Loss curve during rejection sampling finetuning used to train \methodname-1.7B-RFT.}
+%     \label{fig:codescout_1.7B_RFT}
+% \end{wrapfigure}
 This section presents the RL reward curves and SFT loss curves from the training runs of \methodname. We present the aggregate reward (computed as the sum of the F1 scores across the three localization granularities for 4B and 1.7B, and for 14B as the sum of these three F1 scores and the auxiliary binary reward) and the individual file-level, module-level, and function-level F1 scores during training. Note that all reward curves are smoothed using a running average with a window of 16 training steps. Figures~\ref{fig:codescout_14b_reward}, \ref{fig:codescout_4b_reward}, and \ref{fig:codescout_1.7b_reward} present these reward curves for \methodname-14B, \methodname-4B, and \methodname-1.7B respectively. Furthermore, Figure~\ref{fig:codescout_1.7B_RFT} presents the loss curve for rejection sampling fine-tuning of \texttt{Qwen3-1.7B} resulting in \methodname-1.7B-RFT model.
 
 As expected, all reward curves across all models show an approximately increasing nature (or remain constant during the later stages of training). Notably, all the reward curves for \methodname-4B and the \methodname-14B models show an increasing trend with no visible signs of saturation, indicating that training further on more GitHub issues will likely result in even stronger localization performance. However, we observe that the reward curves for \methodname-1.7B have mostly plateaued and the model no longer shows signs of further improvement with more training. Interstingly, even after fine-tuning \texttt{Qwen3-1.7B} on \textbf{4K successful trajectories} sampled from \methodname-14B with the training loss approaching \emph{almost zero} (Figure~\ref{fig:codescout_1.7B_RFT}), we find that training this checkpoint further using reinforcement learning improves the model performance even further - we observe an increasing reward curve with a steep slope during the first $\approx$ 20 training steps before saturating. 
@@ -176,7 +177,7 @@ Thirdly, we acknowledge that several baselines use models from the Qwen2.5 serie
 Furthermore, while our reward design (\S\ref{sec:reward_design}) is quite intuitive and incorporates localization performance at three distinct granularities (files, modules, and functions), and a turn-limit reward for the 14B LLM, we do not study more sophisticated approaches to aggregate these individual components instead of simply summing them with equal weights. Alternative reward designs may allocate different weights to these individual components, which may result in better localization performance. However, we do not perform this analysis because determining these individual weights is non-trivial and often requires numerous ablation experiments for RL training that are very expensive to perform.
 
 Finally, localizing relevant/faulty code from the repository for resolving GitHub issues does not cover the broader scope of repository-level code search tasks, and our work does not address general-purpose repository-level question-answering/search tasks like those covered by benchmarks like CodeAssistBench~\citep{kim2026codeassistbenchcabdataset} and SWE-QA~\citep{peng2025sweqalanguagemodelsanswer}. Future research directions include expanding the scope of our work to a broader range of tasks requiring repository-level code localization.
-\input{COLM/Figures/performance_vs_location_count}
+\input{Figures/performance_vs_location_count}
 \section{Error Analysis}\label{appendix:error_analysis}
 This sections presents insights and key takeaways from our quantitative and qualitative error analysis of agent trajectories for evaluation benchmarks.
 
@@ -226,9 +227,9 @@ As shown in the top group of Table~\ref{tab:results_ablation}, all four recipes 
 \paragraph{Single-factor ablations.}
 We next isolate the effect of individual design choices by changing exactly one factor from the GSPO configuration.
 
-\emph{Loss reduction.} Standard GRPO normalizes the per-sequence loss by the response length, which introduces a length bias~\citep{liu2025understandingr1zeroliketrainingcritical}. Dr.GRPO addresses this by dividing the per-sequence token sum by a fixed constant (the generation budget) instead. Inspired by the adoption of this technique in recent work~\citep{cognition2025swegrep}, we test whether it benefits GSPO by switching from \texttt{sequence\_mean} to \texttt{seq\_mean\_token\_sum\_norm} while keeping all other settings unchanged. This causes a substantial drop in file-level F1 (54.83\% $\to$ 42.02\%), suggesting it does not transfer well to GSPO's sequence-level importance ratio.
+\emph{Loss reduction.} Standard GRPO normalizes the per-sequence loss by the response length, which introduces a length bias~\citep{liu2025understandingr1zeroliketrainingcritical}. Dr.GRPO addresses this by dividing the per-sequence token sum by a fixed constant (the generation budget) instead. Inspired by the adoption of this technique by ~\citet{cognition2025swegrep}, we test whether it benefits GSPO by switching from seq\_mean to  seq\_mean\_token\_sum\_norm while keeping all other settings unchanged. This causes a substantial drop in file-level F1 (54.83\% $\to$ 42.02\%), suggesting it does not transfer well to GSPO's sequence-level importance ratio.
 
-\emph{Advantage normalization.} GRPO and SAPO both standardize advantages by their standard deviation, while GSPO does not. Enabling this by setting \texttt{grpo\_norm\_by\_std=true} slightly lowers file-level F1 (54.83\% $\to$ 52.73\%) but improves module- and function-level metrics (31.43\% $\to$ \textbf{34.37\%} and 23.29\% $\to$ \textbf{26.41\%}).
+\emph{Advantage normalization.} GRPO and SAPO both standardize advantages by their standard deviation, while our variant of GSPO does not. Enabling this by setting \texttt{grpo\_norm\_by\_std=true} slightly lowers file-level F1 (54.83\% $\to$ 52.73\%) but improves module- and function-level metrics (31.43\% $\to$ \textbf{34.37\%} and 23.29\% $\to$ \textbf{26.41\%}).
 
 These findings indicate that the GSPO configuration used by \methodname performs competitively across all granularities, supporting its use as a reasonable default. More broadly, the relatively narrow performance range across recipes indicates that, for the code localization task with \texttt{Qwen3-4B/14B}, the choice of reward design (\S\ref{sec:reward_design}) and agent scaffold (\S\ref{sec:agent_scaffold}) likely matters more than the specific RL algorithm, consistent with our recipe-oriented perspective. Finally, note that none of these approaches outperform the default recipe used to train \methodname-4B models implying that reducing the step count from 6 to 4 hurts model performance, and it may be the case the training the 14B and 1.7B models with higher step limits may result in stronger performance.
   
@@ -237,9 +238,9 @@ These findings indicate that the GSPO configuration used by \methodname performs
 % \yccomment{The ckpts are here with a doc: https://huggingface.co/Leon-Leee/codescout-alg-variants. I'll add a summary later to clarify what are ablated by the variants. But I haven't fully aligned my benchmark running with yours. Should I add a table of the eval scores on SWEBench-lite?}
 
 \section{Example Trajectories for \methodname-14B and \methodname-4B}\label{appendix:traj_examples}
-This section provides some example trajectories sampled from \methodname-14B and \methodname-4B models using our evaluation setup (\S\ref{sec:eval_benchmarks}). We use an identical GitHub issue (\texttt{django\_\_django-13363}) from the SWE-Bench Verified benchmark~\citep{chowdhury2024swebenchverified} for both these models to allow a direct comparison of their tool-use behaviors and problem-solving approaches. Note that both models achieve  perfectly correct localization for this instance, i.e. they achieve an F1 score of 1.0 for all three granularities: file, module, and function. Note that we omit the system prompt and user prompt (which mentions the issue description) for these example rollouts. Figures \ref{fig:traj_14B_p1} and \ref{fig:traj_14b_p2} present the trajectory sampled from \methodname-14B, and figures \ref{fig:traj_4b_p2} and \ref{fig:traj_4b_p2} present the trajectory sampled from \methodname-4B.
+This section provides some example trajectories sampled from \methodname-14B and \methodname-4B models using our evaluation setup (\S\ref{sec:eval_benchmarks}). We use an identical GitHub issue from the SWE-Bench Verified benchmark~\citep{chowdhury2024swebenchverified} \texttt{django\_\_django-13363} for both these models to allow a direct comparison of their tool-use behaviors and problem-solving approaches. Note that both models achieve  perfectly correct localization for this instance, i.e. they achieve an F1 score of 1.0 for all three granularities: file, module, and function. Note that we omit the system prompt and user prompt (which mentions the issue description) for these example rollouts. Figures \ref{fig:traj_14B_p1} and \ref{fig:traj_14b_p2} present the trajectory sampled from \methodname-14B, and figures \ref{fig:traj_4b_p2} and \ref{fig:traj_4b_p2} present the trajectory sampled from \methodname-4B.
 
-As noted in \S\ref{sec:tool_use_behaviour}, \methodname-14B relies only on two Unix command-line utilities for code localization: \texttt{ripgrep (rg)} and \texttt{sed}. By analyzing the trajectory, we observe that the model uses \texttt{ripgrep} for efficient keyword-based search of the code repository and \texttt{sed} for reading specific line-ranges from relevant files. Therefore, by exploring the repository for \emph{only} 3 steps and using \emph{only} 2 command-line utilities, \methodname-14B can determine the exact set of relevant set of files, classes, and functions that require modification to fix a given GitHub issue, highlighting the effectiveness of our approach.
+As noted in \S\ref{sec:tool_use_behaviour}, \methodname-14B relies only on two command-line utilities for code localization: \texttt{ripgrep (rg)} and \texttt{sed}. By analyzing the trajectory, we observe that the model uses \texttt{ripgrep} for efficient keyword-based search of the code repository and \texttt{sed} for reading specific line-ranges from relevant files. Therefore, by exploring the repository for \emph{only} 3 steps and using \emph{only} 2 command-line utilities, \methodname-14B can determine the exact set of relevant set of files, classes, and functions that require modification to fix a given GitHub issue, highlighting the effectiveness of our approach.
 
 Interestingly, \methodname-4B uses a few more Unix command-line utilities for code localization: \texttt{rg}, \texttt{find}, \texttt{cat}, \texttt{xargs} and \texttt{sed}. The model mostly uses \texttt{rg}, \texttt{find} and \texttt{xargs} during keyword-based searches, and \texttt{sed} and \texttt{cat} for reading particular line-ranges from files. Furthermore, the bash commands issued by \methodname-4B are more complex and often use more than one Unix utility in the same command chained together through piping ($|$). Here as well, \methodname-4B performs code localization by exploring the repository for \emph{only} 3 steps and using \emph{only} 5 command-line utilities. For both the models, the command-line utilities used in these examples align with those used by the final training checkpoint in Figure~\ref{fig:merged_tool_use}.
 
@@ -252,7 +253,8 @@ As opposed to prior approaches that a fixed number of top-$K$ relevant locations
 Note that the choice of $K$ will also determine the trade-off between precision and recall, and the results in \S\ref{sec:results} for these baselines are based on the corresponding default choice of $K$ used by their scaffolds. We also include comparisons with these methods for different choices of $K$ to understand the precision-recall tradeoff and to compare these methods with \methodname-4B and \methodname-14B models. Table~\ref{tab:return_at_k_swe_bench_verified} presents the detailed results for three choices of $K$ - 1, 3, and all (the default setting where $K$ is set to 5). Impressively, \methodname models outperform all prior methods that use a larger LLM across different choices of $K$ even when dynamically predicting a variable number of locations. Furthermore, note that there is significant variance in the precision, recall, and F1 scores of the baseline methods for different choices of $K$ implying that deciding the right value of $K$ for the optimal performance is non-trivial and also depends on the characteristics of the GitHub issue and the benchmark/domain. Impressively, \methodname strikes the right balance between precision and recall as a result of its scaffold design and our RL recipe that incorporates both precision and recall by computing the F1 scores.
 \begin{table*}[!t]
 \centering
-\resizebox{\textwidth}{!}{%
+\caption{Comparison of \methodname with methods that predict a ranked list of top-K locations for different choices of K (Return@K) on \textbf{SWE-Bench Verified}. The setting \texttt{all} refers to the default setting with K$=$5 used by these scaffolds.}
+\resizebox{0.7\textwidth}{!}{%
 \begin{tabular}{lc|ccc|ccc}
 \toprule
 \multirow{2}{*}{\textbf{Scaffold + LLM}} & \multirow{2}{*}{\textbf{Return@K}} & \multicolumn{3}{c|}{\textbf{File}} & \multicolumn{3}{c}{\textbf{Function}} \\
@@ -276,7 +278,6 @@ Note that the choice of $K$ will also determine the trade-off between precision 
 \bottomrule
 \end{tabular}%
 }
-\caption{Comparison of \methodname with methods that predict a ranked list of top-K locations for different choices of K (Return@K) on \textbf{SWE-Bench Verified}. The setting \texttt{all} refers to the default setting with K$=$5 used by these scaffolds.}
 \label{tab:return_at_k_swe_bench_verified}
 \end{table*}
 \begin{figure*}[!t]
@@ -349,6 +350,7 @@ class TruncTime(TruncBase):
 \end{tcolorbox}
 \caption{Example trajectory sampled from \methodname-14B for the task \texttt{django\_\_django-13363} (continued on the next page).}
 \label{fig:traj_14B_p1}
+\Description{Action-observation pairs (actions in blue box and observations in orange box) from a trajectory sampled from CodeScout-14B for an example task.}
 \end{figure*}
 \begin{figure*}[!ht]
 
@@ -403,6 +405,7 @@ Rewards:
 \end{lstlisting}
 \end{tcolorbox}
 \caption{Example trajectory sampled from \methodname-14B for the task \texttt{django\_\_django-13363}.}
+\Description{Action-observation pairs (actions in blue box and observations in orange box) and reward calculation (purple box) from a trajectory sampled from CodeScout-14B for an example task.}
 \label{fig:traj_14b_p2}
 \end{figure*}
 
@@ -431,18 +434,13 @@ rg -l TruncBase
 ./django/db/models/functions/datetime.py
 ./django/db/models/functions/__init__.py
 ./tests/db_functions/datetime/test_extract_trunc.py
-
 # [Results for Command 2]
 ./django/db/models/functions/datetime.py
 ./django/db/models/functions/__init__.py
 ./tests/db_functions/datetime/test_extract_trunc.py
-
-# [Results for Command 3]
+# [Results for Command 3 (truncated)]
 django/db/backends/postgresql/base.py
 django/templatetags/tz.py
-tests/db_functions/datetime/test_extract_trunc.py
-... (truncated)
-
 # [Results for Command 4]
 django/db/models/functions/datetime.py
 \end{lstlisting}
@@ -462,7 +460,7 @@ rg -n 'get_current_timezone_name' django/db/models/functions/datetime.py
 % Step 2: Observation (Trimmed)
 \begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title={\small Observation 2 (trimmed)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.5}{8.5}\ttfamily, breaklines=true]
-# [Results for Command 1]
+# [Results for Command 1 (truncated)]
 ...
 from django.utils import timezone
 class TimezoneMixin:
@@ -473,7 +471,6 @@ class TruncDate(TruncBase):
         tzname = timezone.get_current_timezone_name() if settings.USE_TZ else None
         sql = connection.ops.datetime_cast_date_sql(lhs, tzname)
 ...
-
 # [Results for Command 2 (empty)]
 # [Results for Command 3]
 25:                tzname = timezone.get_current_timezone_name()
@@ -482,6 +479,7 @@ class TruncDate(TruncBase):
 \end{lstlisting}
 \end{tcolorbox}
 \caption{Example trajectory sampled from \methodname-4B for the task \texttt{django\_\_django-13363} (continued on the next page).}
+\Description{Action-observation pairs (actions in blue box and observations in orange box) from a trajectory sampled from CodeScout-4B for an example task.}
 \label{fig:traj_4b_p1}
 \end{figure*}
 
@@ -541,6 +539,7 @@ Rewards:
 \end{lstlisting}
 \end{tcolorbox}
 \caption{Example trajectory sampled from \methodname-4B for the task \texttt{django\_\_django-13363}.}
+\Description{Action-observation pairs (actions in blue box and observations in orange box) and reward computation (in purple box) from a trajectory sampled from CodeScout-14B for an example task.}
 \label{fig:traj_4b_p2}
 \end{figure*}
 \section{Prompts for Issue Resolution with Localization-Augmented Context}\label{appendix:prompts_swe_bench}
@@ -551,14 +550,10 @@ We provide detailed user and system prompts in the OpenHands software agent SDK 
 \begin{tcolorbox}[colback=purple!6!white, colframe=purple!75!black, title={\small User Prompt for OpenHands Issue Resolution Agent (Vanilla Setting)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
 I have access to a python code repository in the directory {{ instance.repo_path }} . You can explore and modify files using the available tools. Consider the following issue description:
-
 <issue_description>
 {{ instance.problem_statement }}
 </issue_description>
-Can you help me implement the necessary changes to the repository so that the requirements specified in the <issue_description> are met?
-I've already taken care of all changes to any of the test files described in the <issue_description>. This means you DON'T have to modify the testing logic or any of the tests in any way! Also the development Python environment is already set up for you (i.e., all dependencies already installed), so you don't need to install other packages. Your task is to make the minimal changes to non-test files in the {{ instance.repo_path }} directory to ensure the <issue_description> is satisfied.
-
-Follow these phases to resolve the issue:
+Can you help me implement the necessary changes to the repository so that the requirements specified in the <issue_description> are met? I've already taken care of all changes to any of the test files described in the <issue_description>. This means you DON'T have to modify the testing logic or any of the tests in any way! Also the development Python environment is already set up for you (i.e., all dependencies already installed), so you don't need to install other packages. Your task is to make the minimal changes to non-test files in the {{ instance.repo_path }} directory to ensure the <issue_description> is satisfied. Follow these phases to resolve the issue:
 Phase 1. READING: read the problem and reword it in clearer terms
    1.1 If there are code or config snippets. Express in words any best practices or conventions in them.
    1.2 Hightlight message errors, method names, variables, file names, stack traces, and technical details.
@@ -611,7 +606,8 @@ Be thorough in your exploration, testing, and reasoning. It's fine if your think
 
 \end{lstlisting}
 \end{tcolorbox}
-\caption{User prompt for OpenHands issue resolution agent in vanilla setup without augmenting it with any localization results (\S\ref{sec:downstream_swebench}).}
+\caption{User prompt for OpenHands issue resolution agent in vanilla setup (\S\ref{sec:downstream_swebench}).}
+\Description{User prompt for OpenHands during issue resolution without any localization augmentation in pink box.}
 \label{fig:user_prompt_vanilla}
 \end{figure*}
 
@@ -624,9 +620,7 @@ I have access to a python code repository in the directory {{ instance.repo_path
 <issue_description>
 {{ instance.problem_statement }}
 </issue_description>
-
 A separate search subagent has already explored the repository to identify files, modules, and functions that are likely relevant to the issue.
-
 <relevant_context>
 {{ instance.search_results }}
 </relevant_context>
@@ -678,6 +672,7 @@ Phase 5. FIX ANALYSIS: state clearly the problem and how to fix it
 \end{tcolorbox}
 \caption{User prompt for OpenHands issue resolution agent augmented with locations retrieved by \methodname-14B (\S\ref{sec:downstream_swebench}).}
 \label{fig:user_prompt_codescout_augment1}
+\Description{User prompt for OpenHands during issue resolution augmented with locations retrieved by \methodname-14B in lavender-coloured box.}
 \end{figure*}
 \begin{figure*}[!ht]
     \centering
@@ -707,10 +702,11 @@ Be thorough in your exploration, testing, and reasoning. It's fine if your think
 \end{tcolorbox}
 \caption{User prompt for OpenHands issue resolution agent augmented with locations retrieved by \methodname-14B (\S\ref{sec:downstream_swebench}).
 \label{fig:user_prompt_codescout_augment2}
+\Description{User prompt for OpenHands during issue resolution augmented with locations retrieved by \methodname-14B in lavender-coloured box.}
 }
 \end{figure*}
 
-\begin{figure*}[!h]
+\begin{figure*}[!t]
     \centering
 \begin{tcolorbox}[colback=red!6!white, colframe=red!75!black, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Oracle Locations (continued)}]
 \begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
@@ -733,13 +729,12 @@ Important notes about this context:
 - The provided context will not include files that need to be created from scratch for resolving the issue.
 
 Can you help me implement the necessary changes to the repository so that the requirements specified in the <issue_description> are met?
-I've already taken care of all changes to any of the test files described in the <issue_description>. This means you DON'T have to modify the testing logic or any of the tests in any way!
-Also the development Python environment is already set up for you (i.e., all dependencies already installed), so you don't need to install other packages.
-Your task is to make the minimal changes to non-test files in the {{ instance.repo_path }} directory to ensure the <issue_description> is satisfied.
+I've already taken care of all changes to any of the test files described in the <issue_description>. This means you DON'T have to modify the testing logic or any of the tests in any way! Also the development Python environment is already set up for you (i.e., all dependencies already installed), so you don't need to install other packages.
 \end{lstlisting}
 \end{tcolorbox}
 \caption{User prompt for OpenHands issue resolution agent augmented with oracle locations (\S\ref{sec:downstream_swebench}).
 \label{fig:user_prompt_oracle_augment1}
+\Description{User prompt for OpenHands during issue resolution augmented with oracle locations extracted from ground truth issue resolution patch shown in red-coloured box.}
 }
 \end{figure*}
 
@@ -747,7 +742,7 @@ Your task is to make the minimal changes to non-test files in the {{ instance.re
     \centering
 \begin{tcolorbox}[colback=red!6!white, colframe=red!75!black, title={\small User Prompt for OpenHands Issue Resolution Agent Augmented with Oracle Locations}]
 \begin{lstlisting}[basicstyle=\fontsize{7.7}{8}\ttfamily]
-Follow these phases to resolve the issue:
+Your task is to make the minimal changes to non-test files in the {{ instance.repo_path }} directory to ensure the <issue_description> is satisfied. Follow these phases to resolve the issue:
 
 Phase 1. READING: read the problem and reword it in clearer terms
    1.1 If there are code or config snippets. Express in words any best practices or conventions in them.
@@ -802,6 +797,7 @@ Be thorough in your exploration, testing, and reasoning. It's fine if your think
 \end{tcolorbox}
 \caption{User prompt for OpenHands issue resolution agent augmented with oracle locations (\S\ref{sec:downstream_swebench}).
 \label{fig:user_prompt_oracle_augment2}
+\Description{User prompt for OpenHands during issue resolution augmented with oracle locations extracted from ground truth issue resolution patch shown in red-coloured box.}
 }
 \end{figure*}
 
@@ -843,6 +839,7 @@ You are OpenHands agent, a helpful AI assistant that can interact with a compute
 \end{tcolorbox}
 \caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}.}
 \label{fig:swe_bench_system_prompt1}
+\Description{Default OpenHands system prompt shown in green-coloured text box.}
 \end{figure*}
 
 \begin{figure*}[!h]
@@ -884,6 +881,7 @@ You are OpenHands agent, a helpful AI assistant that can interact with a compute
 \end{tcolorbox}
 \caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}.}
 \label{fig:swe_bench_system_prompt2}
+\Description{Default OpenHands system prompt shown in green-coloured text box.}
 \end{figure*}
 
 \begin{figure*}[!h]
@@ -931,6 +929,7 @@ Always provide links to the relevant documentation pages for users who want to l
 \end{tcolorbox}
 \caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}.}
 \label{fig:swe_bench_system_prompt3}
+\Description{Default OpenHands system prompt shown in green-coloured text box.}
 \end{figure*}
 
 \begin{figure*}[!h]
@@ -975,6 +974,7 @@ When using tools that support the security_risk parameter, assess the safety ris
 \end{tcolorbox}
 \caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}.}
 \label{fig:swe_bench_system_prompt4}
+\Description{Default OpenHands system prompt shown in green-coloured text box.}
 \end{figure*}
 \begin{figure*}[!htpb]
     \centering
@@ -1008,7 +1008,7 @@ When using tools that support the security_risk parameter, assess the safety ris
 \end{lstlisting}
 \end{tcolorbox}
 \caption{System prompt of OpenHands used for issue resolution experiments in \S\ref{sec:downstream_swebench}..}
-\label{fig:swe_bench_system_prompt5}\end{figure*}
+\label{fig:swe_bench_system_prompt5}\Description{Default OpenHands system prompt shown in green-coloured text box.}\end{figure*}
 % \section{Performance}
 
 % \input{Tables/results_verified}
