@@ -1,0 +1,55 @@
+% \begin{table*}[t]
+% \centering
+% \caption{Comparing localization performance on SWE-Bench Pro when training the 14B model with different choices of the auxiliary binary reward function for the turn-limit.}
+% \renewcommand{\arraystretch}{2} % Adds vertical padding to rows
+% \setlength{\tabcolsep}{3.5pt}
+% \resizebox{\textwidth}{!}{%
+% \begin{tabular}{c|ccc} 
+% \toprule
+% \textbf{Reward} & \textbf{File F1} & \textbf{Module F1} & \textbf{Function F1} \\
+% \midrule
+
+% % % SWE-BENCH VERIFIED
+% % & $r^{\mathsf{turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & & & \\
+% % \multirow{-2}{*}{SWE-Bench Verified} & $r^{\mathsf{flex-turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & & & \\
+% % \midrule
+
+% % SWE-BENCH PRO
+% $r^{\mathsf{turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & 51.37\% & 28.33\%& 18.95\%\\
+% $r^{\mathsf{flex-turn}}(\tau, k)$ + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & \textbf{55.25\%} & \textbf{31.17\%}& \textbf{22.45\%}\\
+
+% \bottomrule
+% \end{tabular}
+% }
+% \label{tab:reward_function_comparison}
+% \end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Comparing localization performance and efficiency when training the 14B model with different choices of the auxiliary binary reward function for the turn-limit.}
+\renewcommand{\arraystretch}{1.4} % Adds vertical padding to rows
+\resizebox{1.0\textwidth}{!}{%
+\begin{tabular}{c|c|cccc} 
+\toprule
+\textbf{Benchmark} & \textbf{Reward function} & \textbf{File F1} & \textbf{Module F1} & \textbf{Function F1} & \textbf{Avg. \# Steps} \\
+\midrule
+
+% SWE-BENCH VERIFIED
+\multirow{2}{*}{SWE-Bench Verified} & $r^{\mathsf{turn}}(\tau, k) + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & 68.57 & 50.88 & 40.32 & 3.96 \\
+ & $r^{\mathsf{flex-turn}}(\tau, k) + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & 70.37 & 46.43 & 37.30 & 3.78 \\
+\midrule
+
+% SWE-BENCH PRO
+\multirow{2}{*}{SWE-Bench Pro} & $r^{\mathsf{turn}}(\tau, k) + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & 53.63 & 37.13 & 28.74 & 3.98 \\
+ & $r^{\mathsf{flex-turn}}(\tau, k) + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & 54.27 & 35.76 & 27.60 & 3.67 \\
+\midrule
+
+% SWE-BENCH LITE
+\multirow{2}{*}{SWE-Bench Lite} & $r^{\mathsf{turn}}(\tau, k) + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & 71.84 & 59.23 & 44.43 & 4.01 \\
+ & $r^{\mathsf{flex-turn}}(\tau, k) + r^{\mathsf{F1-file}}(y, y^{\star}) + r^{\mathsf{F1-module}}(y, y^{\star}) + r^{\mathsf{F1-func}}(y, y^{\star})$ & 70.92 & 53.22 & 39.29 & 3.62 \\
+
+\bottomrule
+\end{tabular}
+}
+\label{tab:reward_function_comparison}
+\end{table*}
