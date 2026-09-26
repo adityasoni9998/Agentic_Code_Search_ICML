@@ -428,53 +428,42 @@ Address \\
 % line. Please give LaTeX hyphenation hints using the \verb+\-+ command.
 
 \subsection*{AI use statement}
-\textbf{TODO}
-(This section is \textbf{required} and does not count toward the page limit.)
-
-In this work, we used generative AI tools for [tasks with required disclosure].
-We have not used generative AI tools for [other tasks with required disclosure],
-and [the rest of the required disclosure tasks] are not applicable to this work.
-Additionally, we used generative AI tools for [tasks with recommended
-disclosure]. We have reviewed all AI-assisted work. [Elaborate. For example, “we
-checked LLM-generated research ideas for potential plagiarism through a manual
-literature survey”, “LLM-generated code was verified and tested for correctness
-by 2 authors”, etc.]. We take responsibility for the final content of this work,
+In this work, we used generative AI tools to edit a research paper to improve readability like aid with formatting latex and correcting grammar/improving writing style.
+We have not used generative AI tools to generate synthetic data sets, propose or refine hypotheses, design or provide feedback on research  methodology or experiments, implement methods, assist with translation, clean and reformat dataset, support qualitative and thematic data analysis, or interpret results,
+and the rest of the required disclosure tasks like formulate mathematical claims, help develop theoretical models or conceptual frameworks, provide critical ingredients for proving mathematical claims, assist in the writing of proofs, are not applicable to this work. We have reviewed all AI-assisted work. For example, we manually scrutinized the entire paper before final submission. We take responsibility for the final content of this work,
 including text, claims or artifacts produced with the aid of generative AI.
 
-See the ICLR 2027 AI Policy for Authors for more details. This statement should
-not be more than 1 page.
+% \subsection*{Ethics statement}
 
-\subsection*{Ethics statement}
+% \textbf{TODO}(This section is \textbf{recommended} and does not count toward the page limit.)
 
-\textbf{TODO}(This section is \textbf{recommended} and does not count toward the page limit.)
-
-If authors feel that their paper submission raises questions regarding the Code
-of Ethics, they are encouraged to include a paragraph of Ethics Statement (at
-the end of the main text before references) to address potential concerns where
-appropriate. Topics include, but are not limited to, studies that involve human
-subjects, practices to data set releases, potentially harmful insights,
-methodologies and applications, potential conflicts of interest and sponsorship,
-discrimination/bias/fairness concerns, privacy and security issues, legal
-compliance, and research integrity issues (e.g., IRB, documentation, research
-ethics). This statement should not be more than 1 page.
+% If authors feel that their paper submission raises questions regarding the Code
+% of Ethics, they are encouraged to include a paragraph of Ethics Statement (at
+% the end of the main text before references) to address potential concerns where
+% appropriate. Topics include, but are not limited to, studies that involve human
+% subjects, practices to data set releases, potentially harmful insights,
+% methodologies and applications, potential conflicts of interest and sponsorship,
+% discrimination/bias/fairness concerns, privacy and security issues, legal
+% compliance, and research integrity issues (e.g., IRB, documentation, research
+% ethics). This statement should not be more than 1 page.
 
 \subsection*{Reproducibility statement}
+\methodname is a fully open-source RL recipe and we will release our model weights, code, and training data  upon acceptance of our work. To ensure reproducibility of our RL training runs, we fix the random seed in our data-loaders, and we will also share all the trajectories curated from the various models during evaluation on different benchmarks for further fine-grained analysis. Since supporting the OpenHands agent harness in the SkyRL training stack required significant implementation effort, we will also release that to allow extending it to other agentic RL use-cases.
+% (This section is \textbf{TODO} \textbf{recommended} and does not count toward the page limit.)
 
-(This section is \textbf{TODO} \textbf{recommended} and does not count toward the page limit.)
-
-It is important that the work published in ICLR is reproducible. Authors are
-strongly encouraged to include a paragraph-long Reproducibility Statement at the
-end of the main text (before references) to discuss the efforts that have been
-made to ensure reproducibility. This paragraph should not itself describe
-details needed for reproducing the results, but rather reference the parts of
-the main paper, appendix, and supplemental materials that will help with
-reproducibility. For example, for novel models or algorithms, a link to an
-anonymous downloadable source code can be submitted as supplementary materials;
-for theoretical results, clear explanations of any assumptions and a complete
-proof of the claims can be included in the appendix; for any datasets used in
-the experiments, a complete description of the data processing steps can be
-provided in the supplementary materials. Each of the above are examples of
-things that can be referenced in the reproducibility statement.
+% It is important that the work published in ICLR is reproducible. Authors are
+% strongly encouraged to include a paragraph-long Reproducibility Statement at the
+% end of the main text (before references) to discuss the efforts that have been
+% made to ensure reproducibility. This paragraph should not itself describe
+% details needed for reproducing the results, but rather reference the parts of
+% the main paper, appendix, and supplemental materials that will help with
+% reproducibility. For example, for novel models or algorithms, a link to an
+% anonymous downloadable source code can be submitted as supplementary materials;
+% for theoretical results, clear explanations of any assumptions and a complete
+% proof of the claims can be included in the appendix; for any datasets used in
+% the experiments, a complete description of the data processing steps can be
+% provided in the supplementary materials. Each of the above are examples of
+% things that can be referenced in the reproducibility statement.
 
 % \subsubsection*{Author Contributions}
 % If you'd like to, you may include  a section for author contributions as is done
